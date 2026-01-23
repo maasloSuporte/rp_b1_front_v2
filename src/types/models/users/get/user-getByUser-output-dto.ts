@@ -1,0 +1,32 @@
+export interface IUserGetByUserOutputDto { 
+    id: string
+    name: string
+    cpf: string
+    role: string
+    enabled: boolean
+    createdAt: string
+    updatedAt: string
+    desactivatedAt: string
+    enabledAt: string
+    desactivatedByEmail: string
+    enabledByEmail: string
+    deactivatedByUserName: string
+    enabledByUserName: string
+    lastCompanyId: any
+    lastCompany: any
+    userName: string
+    normalizedUserName: string
+    email: string
+    normalizedEmail: string
+    emailConfirmed: boolean
+    passwordHash: string
+    securityStamp: string
+    concurrencyStamp: string
+    phoneNumber: any
+    phoneNumberConfirmed: boolean
+    twoFactorEnabled: boolean
+    lockoutEnd: any
+    lockoutEnabled: boolean
+    accessFailedCount: number
+    active: boolean
+}

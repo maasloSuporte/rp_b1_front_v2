@@ -1,0 +1,48 @@
+import api from './api';
+import type {
+  IPaginationInputDto,
+  IPaginationOutputDto,
+  IProjectsCreateInputDto,
+  IProjectsCreateOutputDto,
+  IProjectUpdateInputDto,
+  IProjectUpdateOutputDto,
+  IProjectGetOutputDto,
+  IProjectGetAllOutputDto,
+  IProjectGetSimpleOutputDto,
+  IProjectDeleteInputDto,
+  IProjectDeleteOutputDto,
+} from '../types/models';
+
+export const projectsService = {
+  createProject: async (project: IProjectsCreateInputDto): Promise<IProjectsCreateOutputDto> => {
+    const response = await api.post<IProjectsCreateOutputDto>('/projects', project);
+    return response.data;
+  },
+
+  updateProject: async (id: number, project: IProjectUpdateInputDto): Promise<IProjectUpdateOutputDto> => {
+    const response = await api.patch<IProjectUpdateOutputDto>(`/projects/${id}`, project);
+    return response.data;
+  },
+
+  getAllProjects: async (paginations: IPaginationInputDto): Promise<IPaginationOutputDto<IProjectGetAllOutputDto>> => {
+    const response = await api.get<IPaginationOutputDto<IProjectGetAllOutputDto>>(
+      `/projects/all?PageNumber=${paginations.pageNumber}&PageSize=${paginations.pageSize}`
+    );
+    return response.data;
+  },
+
+  getByIdProject: async (projectId: number): Promise<IProjectGetOutputDto> => {
+    const response = await api.get<IProjectGetOutputDto>(`/projects/${projectId}`);
+    return response.data;
+  },
+
+  getProjects: async (): Promise<IProjectGetSimpleOutputDto[]> => {
+    const response = await api.get<IProjectGetSimpleOutputDto[]>('/projects/simple/all');
+    return response.data;
+  },
+
+  deleteProject: async (project: IProjectDeleteInputDto): Promise<IProjectDeleteOutputDto> => {
+    const response = await api.delete<IProjectDeleteOutputDto>(`/projects/${project.id}`);
+    return response.data;
+  },
+};
