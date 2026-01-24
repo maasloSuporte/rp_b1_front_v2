@@ -76,7 +76,10 @@ export default function Project() {
   const loadPackages = async () => {
     try {
       const result = await packagesService.getPackageCompany();
+
       setPackageList(result);
+
+      return result;
     } catch (error) {
       console.error('Erro ao carregar packages:', error);
     }
@@ -86,7 +89,7 @@ export default function Project() {
     try {
       const result = await packagesVersionsService.getByIdPackageVersion(packageId);
       setPackageVersions(result);
-      setValue('packageVersionId', 0);
+      return result;
     } catch (error) {
       console.error('Erro ao carregar versões:', error);
     }
@@ -95,13 +98,9 @@ export default function Project() {
   const loadProjectById = async (projectId: number) => {
     try {
       const project = await projectsService.getByIdProject(projectId);
-      
-      // Aguarda os packages serem carregados
-      if (packageList.length === 0) {
-        await loadPackages();
-      }
-      
-      const selectedPackage = packageList.find((p) => p.name === project.packageName);
+
+      const list = await loadPackages() || [];
+      const selectedPackage = list.find((p) => p.name === project.packageName);
       const selectedPackageId = selectedPackage?.id ?? 0;
 
       setValue('name', project.name);
