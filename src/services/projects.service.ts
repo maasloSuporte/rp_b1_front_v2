@@ -24,9 +24,10 @@ export const projectsService = {
     return response.data;
   },
 
-  getAllProjects: async (paginations: IPaginationInputDto): Promise<IPaginationOutputDto<IProjectGetAllOutputDto>> => {
+  getAllProjects: async (paginations: IPaginationInputDto, queryParams?: string): Promise<IPaginationOutputDto<IProjectGetAllOutputDto>> => {
+    const queryString = queryParams || `SortField=id&SortOrder=asc&PageNumber=${paginations.pageNumber}&PageSize=${paginations.pageSize}`;
     const response = await api.get<IPaginationOutputDto<IProjectGetAllOutputDto>>(
-      `/projects/all?PageNumber=${paginations.pageNumber}&PageSize=${paginations.pageSize}`
+      `/projects/all?${queryString}`
     );
     return response.data;
   },
