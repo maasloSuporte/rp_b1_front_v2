@@ -1,0 +1,117 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap");
+@import "tailwindcss";
+
+@theme {
+  /* colors */
+  --color-primary: #5d87ff;
+  --color-primary-100: #ecf2ff;
+  --color-primary-500: #5d87ff;
+  --color-primary-700: #5d87ff;
+  --color-accent: #49beff;
+  --color-accent-100: #e8f7ff;
+  --color-accent-500: #49beff;
+  --color-warning: #ffae1f;
+  --color-warning-100: #fef5e5;
+  --color-warning-500: #ffae1f;
+  --color-error: #fa896b;
+  --color-error-100: #fdede8;
+  --color-error-500: #fa896b;
+  --color-success: #13deb9;
+  --color-success-100: #e6fffa;
+  --color-success-500: #13deb9;
+  --color-orange: #fb7f0d;
+  --color-orange-100: #fff4eb;
+  --color-purple: #36263f;
+  --color-purple-100: #f0eef0;
+  --color-purple-dark: #36263f;
+  --color-sidebar-bg: #ffffff;
+  --color-sidebar-dark: #2a3447;
+  --color-background: #f8f9fc;
+  --color-background-dark: #2a3447;
+  --color-border: #e5eaef;
+  --color-border-form: #dfe5ef;
+  --color-text-primary: #2a3547;
+  --color-text-secondary: #7c8fac;
+  /* font */
+  --font-sans: 'Plus Jakarta Sans', Arial, sans-serif;
+  --font-size-10: 10px;
+  /* spacing */
+  --spacing-sidebar-desktop: 270px;
+  --spacing-sidebar-mini: 80px;
+  --spacing-header: 70px;
+  /* radius */
+  --radius-custom: 7px;
+  /* shadow */
+  --shadow-card: rgb(145 158 171 / 30%) 0px 0px 2px 0px, rgb(145 158 171 / 12%) 0px 12px 24px -4px;
+  --shadow-card-dark: rgba(145, 158, 171, 0.3) 0px 0px 2px 0px, rgba(145, 158, 171, 0.02) 0px 12px 24px -4px;
+}
+
+@layer base {
+  html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    font-size: 10px;
+    font-family: 'Plus Jakarta Sans', Arial, sans-serif;
+  }
+  
+  body {
+    background-color: #f8f9fc;
+  }
+  
+  #root {
+    height: 100%;
+    width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  button,
+  [role="button"],
+  input[type="submit"],
+  input[type="button"],
+  select,
+  a {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [role="button"][aria-disabled="true"],
+  input:disabled,
+  select:disabled {
+    cursor: not-allowed;
+  }
+}
+
+@layer components {
+  .container-global {
+    @apply relative p-5 min-h-screen bg-background rounded-md shadow-card;
+  }
+  
+  .title-global {
+    @apply font-sans font-semibold text-4xl text-text-primary mb-4;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}
+
+/* Sidebar: garante cursor pointer em todos os elementos clicáveis */
+.app-sidebar a,
+.app-sidebar button {
+  cursor: pointer;
+}

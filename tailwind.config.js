@@ -2,7 +2,7 @@
 export default {
   content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./app/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
@@ -35,14 +35,16 @@ export default {
         },
         orange: {
           DEFAULT: '#FB7F0D',
+          50: '#fff8f0',
+          100: '#fff4eb',
+          200: '#ffe4cc',
         },
-               purple: {
-                 DEFAULT: '#36263F',
-                 dark: '#36263F',
-               },
-               orange: {
-                 DEFAULT: '#FB7F0D',
-               },
+        purple: {
+          DEFAULT: '#36263F',
+          100: '#f0eef0',
+          200: '#e5dce8',
+          dark: '#36263F',
+        },
         sidebar: {
           bg: '#ffffff',
           dark: '#2a3447',

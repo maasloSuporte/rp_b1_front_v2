@@ -1,0 +1,1 @@
+import{a as s}from"./api-BB9j10S9.js";const a={getAllJobs:async e=>(await s.get(`/jobs?${e}`)).data,getByIdJob:async e=>(await s.get(`/jobs/${e}`)).data,createJob:async e=>(await s.post("/jobs",e)).data,executeJob:async e=>{await s.post(`/jobs/${e}/execute`)}};export{a as j};

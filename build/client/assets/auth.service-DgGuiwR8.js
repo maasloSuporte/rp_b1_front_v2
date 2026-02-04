@@ -1,0 +1,1 @@
+const e="Authorization",t={saveToken:o=>{sessionStorage.setItem(e,o),localStorage.setItem("token",o)},getToken:()=>sessionStorage.getItem(e)||localStorage.getItem("token"),removeToken:()=>{sessionStorage.removeItem(e),localStorage.removeItem("token")}},n={logout:()=>{t.removeToken(),window.location.href="/login"},isLoggedIn:()=>t.getToken()!==null};export{n as a,t};

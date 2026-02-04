@@ -1,0 +1,1 @@
+import{a as s}from"./api-BB9j10S9.js";const n={getAllSchedule:async e=>(await s.get(`/schedules?${e}`)).data,getByIdSchedule:async e=>(await s.get(`/schedules/${e}`)).data,createSchedule:async e=>(await s.post("/schedules",e)).data,updateSchedule:async(e,a)=>(await s.patch(`/schedules/${e}`,a)).data,deleteSchedule:async e=>{await s.delete(`/schedules/${e.id}`)}};export{n as s};

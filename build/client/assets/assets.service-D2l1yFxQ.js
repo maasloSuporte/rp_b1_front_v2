@@ -1,0 +1,1 @@
+import{a as t}from"./api-BB9j10S9.js";const r={getAllAssets:async s=>(await t.get(`/assets?${s}`)).data,getByIdAsset:async s=>(await t.get(`/assets/${s}`)).data,createAsset:async s=>(await t.post("/assets",s)).data,updateAsset:async(s,e)=>(await t.patch(`/assets/${s}`,e)).data,deleteAsset:async s=>(await t.delete(`/assets/${s.id}`)).data};export{r as a};
