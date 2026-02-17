@@ -1,30 +1,33 @@
 import { Link, useLocation } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import { Home } from 'lucide-react';
 
+const BREADCRUMB_KEYS: Record<string, string> = {
+  dashboard: 'breadcrumb.dashboard',
+  users: 'breadcrumb.users',
+  roles: 'breadcrumb.roles',
+  assets: 'breadcrumb.assets',
+  packages: 'breadcrumb.packages',
+  jobs: 'breadcrumb.jobs',
+  scheduled: 'breadcrumb.scheduled',
+  queues: 'breadcrumb.queues',
+  machines: 'breadcrumb.machines',
+  automation: 'breadcrumb.automation',
+  project: 'breadcrumb.project',
+  execution: 'breadcrumb.execution',
+  create: 'breadcrumb.create',
+  upload: 'breadcrumb.upload',
+};
+
 export default function Breadcrumb() {
+  const { t } = useTranslation('translation');
   const location = useLocation();
   const paths = location.pathname.split('/').filter(Boolean);
 
   const getBreadcrumbName = (path: string): string => {
-    const nameMap: Record<string, string> = {
-      dashboard: 'Dashboard',
-      users: 'Users',
-      roles: 'Roles',
-      assets: 'Assets',
-      packages: 'Packages',
-      jobs: 'Jobs',
-      scheduled: 'Scheduled',
-      queues: 'Queues',
-      machines: 'Machines',
-      automation: 'Automation',
-      project: 'Project',
-      execution: 'Execution',
-      create: 'Create',
-      upload: 'Upload',
-    };
-
-    return nameMap[path] || path.charAt(0).toUpperCase() + path.slice(1);
+    const key = BREADCRUMB_KEYS[path];
+    return key ? t(key as never) : path.charAt(0).toUpperCase() + path.slice(1);
   };
 
   if (paths.length === 0) {

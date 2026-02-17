@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { projectsService } from '../../service/projects.service';
 import type { IProjectGetSimpleOutputDto } from '../../types/models';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
@@ -11,6 +12,7 @@ interface ParameterRow {
 }
 
 export default function Execution() {
+  const { t } = useTranslation('translation');
   const navigate = useNavigate();
   const [projects, setProjects] = useState<IProjectGetSimpleOutputDto[]>([]);
   const [selectedProject, setSelectedProject] = useState<number>(0);
@@ -60,15 +62,15 @@ export default function Execution() {
           onClick={() => navigate('/automation')}
           className="text-primary hover:text-primary/80 mb-4 flex items-center gap-2"
         >
-          ← Voltar para Automation
+          ← {t('pages.execution.backToAutomation')}
         </button>
-        <h1 className="text-4xl font-semibold text-text-primary">Execution</h1>
+        <h1 className="text-4xl font-semibold text-text-primary">{t('pages.execution.title')}</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-card p-6">
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select Project <span className="text-red-500">*</span>
+            {t('pages.execution.selectProject')} <span className="text-red-500">*</span>
           </label>
           <select
             value={selectedProject}
@@ -76,7 +78,7 @@ export default function Execution() {
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             required
           >
-            <option value={0}>Select a project</option>
+            <option value={0}>{t('pages.execution.selectProject')}</option>
             {projects.map((project) => (
               <option key={project.id} value={project.id}>
                 {project.name}
@@ -88,7 +90,7 @@ export default function Execution() {
         <div className="mb-6">
           <div className="flex justify-between items-center mb-4">
             <label className="block text-sm font-medium text-gray-700">
-              Parameters
+              {t('pages.execution.parameters')}
             </label>
             <button
               type="button"
@@ -96,7 +98,7 @@ export default function Execution() {
               className="flex items-center gap-2 text-primary hover:text-primary/80"
             >
               <PlusIcon className="w-5 h-5" />
-              Add Parameter
+              {t('pages.execution.addParameter')}
             </button>
           </div>
 
@@ -106,7 +108,7 @@ export default function Execution() {
                 <div className="col-span-4">
                   <input
                     type="text"
-                    placeholder="Name"
+                    placeholder={t('pages.execution.namePlaceholder')}
                     value={row.name}
                     onChange={(e) => updateRow(index, 'name', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
@@ -118,16 +120,16 @@ export default function Execution() {
                     onChange={(e) => updateRow(index, 'type', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                   >
-                    <option value="">Select type</option>
-                    <option value="string">String</option>
-                    <option value="number">Number</option>
-                    <option value="boolean">Boolean</option>
+                    <option value="">{t('pages.execution.selectType')}</option>
+                    <option value="string">{t('pages.execution.typeString')}</option>
+                    <option value="number">{t('pages.execution.typeNumber')}</option>
+                    <option value="boolean">{t('pages.execution.typeBoolean')}</option>
                   </select>
                 </div>
                 <div className="col-span-4">
                   <input
                     type="text"
-                    placeholder="Value"
+                    placeholder={t('pages.execution.valuePlaceholder')}
                     value={row.value}
                     onChange={(e) => updateRow(index, 'value', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"

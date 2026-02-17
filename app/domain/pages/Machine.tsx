@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { devicesService } from '../../service/devices.service';
 import { useNotificationStore } from '../../service/notification.service';
@@ -13,6 +14,7 @@ interface MachineFormData {
 }
 
 export default function Machine() {
+  const { t } = useTranslation('translation');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEditMode = !!id;
@@ -83,10 +85,10 @@ export default function Machine() {
           onClick={() => navigate('/machines')}
           className="text-primary hover:text-primary/80 mb-4"
         >
-          ← Voltar
+          ← {t('pages.machines.back')}
         </button>
         <h1 className="text-4xl font-semibold text-text-primary">
-          {isEditMode ? 'Edit Machine' : 'Create Machine'}
+          {isEditMode ? t('pages.machines.titleEdit') : t('pages.machines.titleCreate')}
         </h1>
       </div>
 
@@ -94,15 +96,15 @@ export default function Machine() {
         <div className="grid grid-cols-1 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Machine Name <span className="text-red-500">*</span>
+              {t('pages.machines.machineName')} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               {...register('machineName', {
-                required: 'Machine name is required',
-                minLength: { value: 5, message: 'Machine name must be at least 5 characters' },
+                required: t('pages.machines.machineNameRequired'),
+                minLength: { value: 5, message: t('pages.machines.machineNameMinLength') },
               })}
-              placeholder="Machine name"
+              placeholder={t('pages.machines.machineName')}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
             {errors.machineName && (
@@ -114,13 +116,13 @@ export default function Machine() {
             <>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Environment <span className="text-red-500">*</span>
+                  {t('pages.machines.environment')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   {...register('environment', {
-                    required: isEditMode ? 'Environment is required' : false,
-                    minLength: { value: 5, message: 'Environment must be at least 5 characters' },
+                    required: isEditMode ? t('pages.machines.environmentRequired') : false,
+                    minLength: { value: 5, message: t('pages.machines.environmentMinLength') },
                   })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 />
@@ -131,13 +133,13 @@ export default function Machine() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Host Name <span className="text-red-500">*</span>
+                  {t('pages.machines.hostname')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   {...register('hostName', {
-                    required: isEditMode ? 'Host name is required' : false,
-                    minLength: { value: 3, message: 'Host name must be at least 3 characters' },
+                    required: isEditMode ? t('pages.machines.hostNameRequired') : false,
+                    minLength: { value: 3, message: t('pages.machines.hostNameMinLength') },
                   })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 />
@@ -148,16 +150,16 @@ export default function Machine() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  IP <span className="text-red-500">*</span>
+                  {t('pages.machines.ip')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   {...register('ip', {
-                    required: isEditMode ? 'IP is required' : false,
+                    required: isEditMode ? t('pages.machines.ipRequired') : false,
                     pattern: {
                       value:
                         /^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)){3}$/,
-                      message: 'Invalid IP address format',
+                      message: t('pages.machines.invalidIp'),
                     },
                   })}
                   placeholder="192.168.1.1"
@@ -175,13 +177,13 @@ export default function Machine() {
             onClick={() => navigate('/machines')}
             className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
           >
-            Cancel
+            {t('common.buttons.cancel')}
           </button>
           <button
             type="submit"
             className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
           >
-            {isEditMode ? 'Update' : 'Create'}
+            {isEditMode ? t('common.buttons.save') : t('common.buttons.create')}
           </button>
         </div>
       </form>

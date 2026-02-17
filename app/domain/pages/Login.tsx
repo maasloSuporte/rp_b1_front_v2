@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { loginService } from '../../service/login.service';
 import { tokenService } from '../../service/auth.service';
 import { useNotificationStore } from '../../service/notification.service';
@@ -11,6 +12,7 @@ interface LoginFormData {
 }
 
 export default function Login() {
+  const { t } = useTranslation('translation');
   const navigate = useNavigate();
   const showToast = useNotificationStore((state) => state.showToast);
   const {
@@ -33,11 +35,11 @@ export default function Login() {
 
       const response = await loginService.login(auth);
       tokenService.saveToken(response.token);
-      showToast('Sucess', 'Login bem-sucedido', 'success');
+      showToast(t('pages.login.success'), t('pages.login.loginSuccess'), 'success');
       navigate('/dashboard');
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Falha ao realizar login';
-      showToast('Falha', message, 'error');
+      const message = error.response?.data?.message || t('pages.login.loginError');
+      showToast(t('pages.login.failure'), message, 'error');
     }
   };
 
@@ -104,25 +106,25 @@ export default function Login() {
         {/* Formulário */}
         <div className="w-full max-w-md px-8 z-10">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Beanstalk</h1>
-            <p className="text-gray-600">Orchestrate Efficiency</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('pages.login.title')}</h1>
+            <p className="text-gray-600">{t('pages.login.subtitle')}</p>
           </div>
 
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             {/* Email Field */}
             <div>
               <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                <strong>Email</strong>
+                <strong>{t('pages.login.email')}</strong>
               </label>
               <input
                 id="email"
                 type="email"
                 {...register('email', {
-                  required: 'Email is required',
-                  minLength: { value: 6, message: 'Email should be at least 6 characters' },
+                  required: t('common.validation.emailRequired'),
+                  minLength: { value: 6, message: t('common.validation.emailMinLength') },
                 })}
                 className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
-                placeholder="Email address"
+                placeholder={t('pages.login.emailPlaceholder')}
               />
               {errors.email && (
                 <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
@@ -132,16 +134,16 @@ export default function Login() {
             {/* Password Field */}
             <div>
               <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-                <strong>Password</strong>
+                <strong>{t('pages.login.password')}</strong>
               </label>
               <input
                 id="password"
                 type="password"
                 {...register('password', {
-                  required: 'Password is required',
+                  required: t('common.validation.passwordRequired'),
                 })}
                 className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
-                placeholder="Password"
+                placeholder={t('pages.login.passwordPlaceholder')}
               />
               {errors.password && (
                 <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
@@ -155,7 +157,7 @@ export default function Login() {
                 disabled={!isValid}
                 className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                Sign In
+                {t('pages.login.signIn')}
               </button>
             </div>
           </form>

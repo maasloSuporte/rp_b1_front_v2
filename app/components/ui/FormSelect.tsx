@@ -51,13 +51,23 @@ export const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(f
   ref
 ) {
   const options = useMemo(() => parseOptionsFromChildren(children), [children]);
+  /** Opções que aparecem no dropdown (exclui placeholder value 0 ou '') */
+  const selectableOptions = useMemo(
+    () => options.filter((o) => o.value !== 0 && o.value !== ''),
+    [options]
+  );
 
   const currentValue = value === undefined ? '' : value;
   const selectedOption = options.find((o) => String(o.value) === String(currentValue));
-  const displayLabel = selectedOption ? selectedOption.label : options[0]?.label ?? '';
+  const displayLabel = selectedOption != null ? (selectedOption.label ?? '') : '';
 
-  const handleChange = (newValue: string | number) => {
-    onChange?.({ target: { name: name ?? '', value: newValue } } as React.ChangeEvent<HTMLSelectElement>);
+  const handleChange = (newValue: string | number | undefined) => {
+    if (typeof onChange === 'function') {
+      const event = {
+        target: { name: name ?? '', value: newValue ?? '', valueAsNumber: Number(newValue) },
+      } as unknown as React.ChangeEvent<HTMLSelectElement>;
+      onChange(event);
+    }
     onBlur?.();
   };
 
@@ -98,7 +108,7 @@ export const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(f
           transition
           className={`${optionsBase} [--anchor-gap:4px] origin-top transition duration-200 ease-out data-closed:scale-95 data-closed:opacity-0`}
         >
-          {options.map((opt) => (
+          {selectableOptions.map((opt) => (
             <ListboxOption
               key={String(opt.value)}
               value={opt.value}

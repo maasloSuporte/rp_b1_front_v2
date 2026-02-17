@@ -29,7 +29,9 @@ export const scheduleService = {
   },
 
   updateSchedule: async (id: number, schedule: IScheduleUpdateInputDto): Promise<IScheduleUpdateOutputDto> => {
-    const response = await api.patch<IScheduleUpdateOutputDto>(`/schedules/${id}`, schedule);
+    const response = await api.patch<IScheduleUpdateOutputDto>(`/schedules/${id}`, schedule, {
+      headers: { 'Content-Type': 'application/json' },
+    });
     return response.data;
   },
 

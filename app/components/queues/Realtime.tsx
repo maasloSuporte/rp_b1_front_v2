@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { queuesService } from '../../service/queues.service';
 import DynamicTable from '../DynamicTable';
 import Loading from '../Loading';
@@ -6,47 +7,22 @@ import type { TableColumn, ActionMenuItem } from '../../types/table';
 import type { IPaginationOutputDto, IQueueGetOutputDto } from '../../types/models';
 
 export default function Realtime() {
+  const { t } = useTranslation('translation');
   const [data, setData] = useState<any[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [queryString, setQueryString] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const columns: TableColumn[] = [
-    {
-      key: 'name',
-      label: 'Name',
-      filterable: true,
-      sortable: false,
-      filterType: 'text',
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      filterable: true,
-      sortable: false,
-      filterType: 'text',
-    },
-    {
-      key: 'items',
-      label: 'Items',
-      filterable: false,
-      sortable: false,
-      filterType: 'text',
-    },
-    {
-      key: 'actions',
-      label: 'Actions',
-      type: 'action'
-    }
-  ];
+  const columns: TableColumn[] = useMemo(() => [
+    { key: 'name', label: t('pages.queues.name'), filterable: true, sortable: false, filterType: 'text' },
+    { key: 'status', label: t('pages.queues.status'), filterable: true, sortable: false, filterType: 'text' },
+    { key: 'items', label: t('pages.queues.items'), filterable: false, sortable: false, filterType: 'text' },
+    { key: 'actions', label: t('pages.queues.actions'), type: 'action' },
+  ], [t]);
 
-  const actionMenuItems: ActionMenuItem[] = [
-    {
-      label: 'View',
-      action: 'view',
-      icon: 'eye'
-    }
-  ];
+  const actionMenuItems: ActionMenuItem[] = useMemo(() => [
+    { label: t('pages.queues.view'), action: 'view', icon: 'eye' },
+  ], [t]);
 
   useEffect(() => {
     loadQueues();
@@ -84,12 +60,12 @@ export default function Realtime() {
   };
 
   if (loading) {
-    return <Loading text="Carregando queues em tempo real..." />;
+    return <Loading text={t('pages.queues.loadingRealtime')} />;
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <h2 className="text-3xl sm:text-4xl font-semibold text-text-primary mb-8">Real Time Queues</h2>
+      <h2 className="text-3xl sm:text-4xl font-semibold text-text-primary mb-8">{t('pages.queues.titleRealtime')}</h2>
       <section className="mt-6">
       <DynamicTable
         columns={columns}

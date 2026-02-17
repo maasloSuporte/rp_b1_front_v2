@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { packagesService } from '../../service/packages.service';
 import { packagesVersionsService } from '../../service/packagesVersions.service';
@@ -23,6 +24,7 @@ interface PackageFormData {
 }
 
 export default function PackagesUpload() {
+  const { t } = useTranslation('translation');
   const navigate = useNavigate();
   const location = useLocation();
   const showToast = useNotificationStore((state) => state.showToast);
@@ -53,7 +55,7 @@ export default function PackagesUpload() {
   });
 
   const selectedPackageId = watch('packageId');
-  const fileRegister = register('file', { required: 'File is required' });
+  const fileRegister = register('file', { required: t('pages.packagesUpload.fileRequired') });
 
   useEffect(() => {
     loadTechnology();
@@ -165,7 +167,7 @@ export default function PackagesUpload() {
         }
       }
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Falha ao fazer upload do package';
+      const message = error.response?.data?.message || t('pages.packagesUpload.uploadError');
       showToast('Error', message, 'error');
     }
   };
@@ -177,9 +179,9 @@ export default function PackagesUpload() {
           onClick={() => navigate('/packages')}
           className="text-primary hover:text-primary/80 mb-4"
         >
-          ← Voltar
+          ← {t('pages.packagesUpload.back')}
         </button>
-        <h1 className="text-4xl font-semibold text-text-primary">Upload Packages</h1>
+        <h1 className="text-4xl font-semibold text-text-primary">{t('pages.packagesUpload.title')}</h1>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-lg shadow-card p-6">
@@ -187,13 +189,13 @@ export default function PackagesUpload() {
           {isNewUpload && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Package Name <span className="text-red-500">*</span>
+                {t('pages.packagesUpload.packageName')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 {...register('name', {
-                  required: isNewUpload ? 'Package name is required' : false,
-                  minLength: { value: 5, message: 'Package name must be at least 5 characters' },
+                  required: isNewUpload ? t('pages.packagesUpload.nameRequired') : false,
+                  minLength: { value: 5, message: t('pages.packagesUpload.nameMinLength') },
                 })}
                 placeholder="DOWLOANDS_NFE"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
@@ -205,16 +207,16 @@ export default function PackagesUpload() {
           {!isNewUpload && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Package <span className="text-red-500">*</span>
+                {t('pages.packagesUpload.packageLabel')} <span className="text-red-500">*</span>
               </label>
               <select
                 {...register('packageId', {
-                  required: !isNewUpload ? 'Package is required' : false,
-                  min: { value: 1, message: 'Package is required' },
+                  required: !isNewUpload ? t('pages.packagesUpload.packageRequired') : false,
+                  min: { value: 1, message: t('pages.packagesUpload.packageRequired') },
                 })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value={0}>Filter the package...</option>
+                <option value={0}>{t('pages.packagesUpload.filterPackage')}</option>
                 {packageList.map((pkg) => (
                   <option key={pkg.id} value={pkg.id}>
                     {pkg.name}
@@ -229,12 +231,12 @@ export default function PackagesUpload() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description <span className="text-red-500">*</span>
+              {t('pages.packagesUpload.description')} <span className="text-red-500">*</span>
             </label>
             <textarea
               {...register('description', {
-                required: 'Description is required',
-                minLength: { value: 5, message: 'Description must be at least 5 characters' },
+                required: t('pages.packagesUpload.descriptionRequired'),
+                minLength: { value: 5, message: t('pages.packagesUpload.descriptionMinLength') },
               })}
               rows={4}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
@@ -247,16 +249,16 @@ export default function PackagesUpload() {
           {isNewUpload && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Technology <span className="text-red-500">*</span>
+                {t('pages.packagesUpload.technology')} <span className="text-red-500">*</span>
               </label>
               <select
                 {...register('technologyId', {
-                  required: isNewUpload ? 'Technology is required' : false,
-                  min: { value: 1, message: 'Technology is required' },
+                  required: isNewUpload ? t('pages.packagesUpload.technologyRequired') : false,
+                  min: { value: 1, message: t('pages.packagesUpload.technologyRequired') },
                 })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value={0}>Filter the technology...</option>
+                <option value={0}>{t('pages.packagesUpload.filterTechnology')}</option>
                 {technologies.map((tech) => (
                   <option key={tech.id} value={tech.id}>
                     {tech.name}
@@ -271,15 +273,15 @@ export default function PackagesUpload() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Version <span className="text-red-500">*</span>
+              {t('pages.packagesUpload.version')} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               {...register('version', {
-                required: 'Version is required',
+                required: t('pages.packagesUpload.versionRequired'),
                 pattern: {
                   value: /^\d+\.\d+\.\d+$/,
-                  message: 'Version must be in format X.Y.Z (e.g., 1.0.0)',
+                  message: t('pages.packagesUpload.versionFormat'),
                 },
               })}
               placeholder="1.0.0"
@@ -290,7 +292,7 @@ export default function PackagesUpload() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              File <span className="text-red-500">*</span>
+              {t('pages.packagesUpload.file')} <span className="text-red-500">*</span>
             </label>
             <div
               onDragOver={handleDragOver}
@@ -315,10 +317,10 @@ export default function PackagesUpload() {
                 htmlFor="file-upload"
                 className="cursor-pointer text-primary hover:text-primary/80 font-medium"
               >
-                Click to upload or drag and drop
+                {t('pages.packagesUpload.clickToUpload')}
               </label>
               {selectedFileName && (
-                <p className="mt-2 text-sm text-gray-600">Selected: {selectedFileName}</p>
+                <p className="mt-2 text-sm text-gray-600">{t('pages.packagesUpload.selectedFile')}: {selectedFileName}</p>
               )}
               {errors.file && (
                 <p className="mt-2 text-sm text-red-600">{errors.file.message}</p>
@@ -333,13 +335,13 @@ export default function PackagesUpload() {
             onClick={() => navigate('/packages')}
             className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
           >
-            Cancel
+            {t('pages.packagesUpload.cancel')}
           </button>
           <button
             type="submit"
             className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
           >
-            {isNewUpload ? 'Create' : 'Upgrade'}
+            {isNewUpload ? t('pages.packagesUpload.create') : t('pages.packagesUpload.upgrade')}
           </button>
         </div>
       </form>

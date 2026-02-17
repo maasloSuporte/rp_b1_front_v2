@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { PowerIcon } from '@heroicons/react/24/outline';
 import { navItems, type NavItem } from '../../types/nav';
-import { authService } from '../../service/auth.service';
 import { getIcon } from '../../utils/iconMapper';
+import AdminUserModal from './AdminUserModal';
 
 import logoClosed from '../../assets/images/svgs/login/logoNovo.svg';
 import logoOpen from '../../assets/images/svgs/logo-sidebar/2 91.svg';
@@ -31,8 +31,10 @@ export default function Sidebar({
   showToggle = true,
   width = 270,
 }: SidebarProps) {
+  const { t } = useTranslation('translation');
   const location = useLocation();
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const [adminModalOpen, setAdminModalOpen] = useState(false);
 
   // Abre o grupo que contém a rota ativa ao mudar de página
   useEffect(() => {
@@ -77,7 +79,7 @@ export default function Sidebar({
           key={item.navCap}
           className="px-5 py-2.5 mt-4 first:mt-2 text-[11px] font-semibold text-white/50 uppercase tracking-widest"
         >
-          {item.navCap}
+          {t(item.navCap as never)}
         </div>
       );
     }
@@ -97,7 +99,7 @@ export default function Sidebar({
             if (!IconComponent) return null;
             return <IconComponent className="w-6 h-6 shrink-0 text-white/70" />;
           })()}
-          {!isCollapsed && <span className="flex-1">{item.displayName}</span>}
+          {!isCollapsed && <span className="flex-1">{item.displayName ? t(item.displayName as never) : ''}</span>}
         </a>
       );
     }
@@ -151,7 +153,7 @@ export default function Sidebar({
                 <IconComponent className={`w-8 h-8 shrink-0 ${active ? 'text-white' : 'text-white/70'}`} />
               );
             })()}
-            {!isCollapsed && <span className="flex-1 font-medium">{item.displayName}</span>}
+            {!isCollapsed && <span className="flex-1 font-medium">{item.displayName ? t(item.displayName as never) : ''}</span>}
           </Link>
         ) : (
           <>
@@ -170,7 +172,7 @@ export default function Sidebar({
                   <IconComponent className="w-8 h-8 shrink-0 text-white/70" />
                 );
               })()}
-              {!isCollapsed && <span className="flex-1 font-medium">{item.displayName}</span>}
+              {!isCollapsed && <span className="flex-1 font-medium">{item.displayName ? t(item.displayName as never) : ''}</span>}
               {hasChildren && !isCollapsed && (
                 <ChevronDownIcon
                   className={`w-5 h-5 shrink-0 text-white/60 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
@@ -216,7 +218,7 @@ export default function Sidebar({
             onClick={onClose}
             style={{ cursor: 'pointer' }}
             className="p-2 -m-2 rounded-lg text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors lg:hidden"
-            aria-label="Fechar menu"
+            aria-label={t('nav.closeMenu')}
           >
             <XMarkIcon className="w-5 h-5" />
           </button>
@@ -230,10 +232,12 @@ export default function Sidebar({
         </div>
       </nav>
 
-      {/* Área do usuário / logout */}
+      {/* Área do usuário: clique abre modal (idioma + sair) */}
       <div className="shrink-0 p-4 border-t border-white/10 bg-purple">
-        <div
-          className={`flex items-center rounded-xl bg-white/10 transition-[padding] duration-300 ${
+        <button
+          type="button"
+          onClick={() => setAdminModalOpen(true)}
+          className={`w-full flex items-center rounded-xl bg-white/10 transition-[padding] duration-300 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white/30 ${
             isCollapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-3'
           }`}
         >
@@ -242,29 +246,26 @@ export default function Sidebar({
             alt=""
             className="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-white/20"
             onError={(e) => {
-              const t = e.target as HTMLImageElement;
-              t.src = 'data:image/svg+xml,' + encodeURIComponent(
+              const el = e.target as HTMLImageElement;
+              el.src = 'data:image/svg+xml,' + encodeURIComponent(
                 '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="rgba(255,255,255,0.2)"/><path fill="white" d="M20 18a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0 4c-4 0-7 2-7 4v2h14v-2c0-2-3-4-7-4z"/></svg>'
               );
             }}
           />
           {!isCollapsed && (
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 text-left">
               <p className="text-xs font-semibold text-white/80 uppercase tracking-wider truncate">
-                Admin
+                {t('nav.admin')}
               </p>
             </div>
           )}
-          <button
-            type="button"
-            onClick={() => authService.logout()}
-            style={{ cursor: 'pointer' }}
-            className="p-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors shrink-0"
-            title="Sair"
-          >
-            <PowerIcon className="w-5 h-5" />
-          </button>
-        </div>
+        </button>
+        <AdminUserModal
+          open={adminModalOpen}
+          onClose={() => setAdminModalOpen(false)}
+          userName="Admin"
+          userEmail=""
+        />
       </div>
     </aside>
   );

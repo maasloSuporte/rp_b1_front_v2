@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { useForm, Controller } from 'react-hook-form';
 import { scheduleService } from '../../service/schedule.service';
 import { frequencyService } from '../../service/frequency.service';
@@ -45,6 +46,7 @@ const fieldSelectClass =
   'w-full min-h-[2.75rem] px-4 py-3 text-base text-text-primary bg-white border-2 border-border-form rounded-xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-200';
 
 export default function Schedule() {
+  const { t } = useTranslation('translation');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEditMode = !!id;
@@ -83,15 +85,6 @@ export default function Schedule() {
   });
 
   const frequencyId = watch('frequencyId');
-  const hourlyEvery = watch('cronSchedulling.hourly.every');
-  const hourlyMinute = watch('cronSchedulling.hourly.minute');
-  
-  // Debug: monitora os valores em tempo real
-  useEffect(() => {
-    if (frequencyId === 2) {
-      console.log('Watch - hourlyEvery:', hourlyEvery, 'hourlyMinute:', hourlyMinute);
-    }
-  }, [frequencyId, hourlyEvery, hourlyMinute]);
 
   useEffect(() => {
     loadFrequencies();
@@ -141,12 +134,38 @@ export default function Schedule() {
 
   const loadScheduleById = async (scheduleId: number) => {
     try {
-      await scheduleService.getByIdSchedule(scheduleId);
-      // TODO: Preencher o formulário com os dados do schedule
-      // setValue('frequencyId', schedule.frequencyId);
-      // ...
+      const schedule = await scheduleService.getByIdSchedule(scheduleId);
+      setValue('name', schedule.name);
+      setValue('details', schedule.details);
+      setValue('frequencyId', schedule.frequencyId);
+      setValue('projectId', schedule.projectId);
+      setValue('machineId', schedule.machineId);
+      setValue('priority', schedule.priorityId);
+
+      const cron = schedule.schedule;
+      if (cron) {
+        setValue('cronSchedulling.timeZone', cron.timeZone ?? 'E. South America Standard Time');
+        setValue('cronSchedulling.minute.every', cron.every ?? '');
+        setValue('cronSchedulling.hourly.every', cron.every ?? '');
+        setValue('cronSchedulling.hourly.minute', cron.minute ?? '');
+        setValue('cronSchedulling.daily.every', cron.every ?? '');
+        setValue('cronSchedulling.daily.hour', cron.hour ?? '');
+        setValue('cronSchedulling.daily.minute', cron.minute ?? '');
+        setValue('cronSchedulling.weekly.every', cron.every ?? '');
+        setValue('cronSchedulling.weekly.dayOfWeek', Array.isArray(cron.dayOfWeek) ? cron.dayOfWeek : []);
+        setValue('cronSchedulling.monthlyDay.every', cron.every ?? '');
+        setValue('cronSchedulling.monthlyDay.dayOfMonth', '');
+        setValue('cronSchedulling.monthlyDay.hour', cron.hour ?? '');
+        setValue('cronSchedulling.monthlyDay.minute', cron.minute ?? '');
+        setValue('cronSchedulling.monthlyWeek.every', cron.every ?? '');
+        setValue('cronSchedulling.monthlyWeek.weekOfMonth', cron.weekOfMonth ?? '');
+        setValue('cronSchedulling.monthlyWeek.dayOfWeek', Array.isArray(cron.dayOfWeek) ? cron.dayOfWeek[0] ?? '' : '');
+        setValue('cronSchedulling.monthlyWeek.hour', cron.hour ?? '');
+        setValue('cronSchedulling.monthlyWeek.minute', cron.minute ?? '');
+      }
     } catch (error) {
       console.error('Erro ao carregar schedule:', error);
+      showToast('Error', 'Falha ao carregar dados do schedule', 'error');
     }
   };
 
@@ -243,28 +262,6 @@ export default function Schedule() {
 
   const onSubmit = async (data: ScheduleFormData) => {
     try {
-      // Debug: log completo dos dados recebidos
-      console.log('=== DADOS DO FORMULÁRIO ===');
-      console.log('FrequencyId:', data.frequencyId);
-      console.log('CronSchedulling completo:', JSON.stringify(data.cronSchedulling, null, 2));
-      console.log('Hourly values:', {
-        every: data.cronSchedulling.hourly.every,
-        minute: data.cronSchedulling.hourly.minute,
-        everyType: typeof data.cronSchedulling.hourly.every,
-        minuteType: typeof data.cronSchedulling.hourly.minute,
-      });
-      
-      // Debug: log completo dos dados recebidos
-      console.log('=== DADOS DO FORMULÁRIO ===');
-      console.log('FrequencyId:', data.frequencyId);
-      console.log('CronSchedulling completo:', JSON.stringify(data.cronSchedulling, null, 2));
-      console.log('Hourly values:', {
-        every: data.cronSchedulling.hourly.every,
-        minute: data.cronSchedulling.hourly.minute,
-        everyType: typeof data.cronSchedulling.hourly.every,
-        minuteType: typeof data.cronSchedulling.hourly.minute,
-      });
-      
       // Se o react-hook-form validou, os campos devem estar corretos
       // Apenas uma validação final de segurança
       const frequencyIdNum = Number(data.frequencyId);
@@ -275,12 +272,10 @@ export default function Schedule() {
         // Se os valores estão vazios, o react-hook-form não deveria ter permitido o submit
         // Mas vamos fazer uma verificação final
         if (!everyValue || everyValue === '' || Number(everyValue) <= 0) {
-          console.error('Erro: every inválido ou vazio');
           showToast('Error', 'Para frequência Hourly, o campo "Repeat every" é obrigatório e deve ser maior que 0', 'error');
           return;
         }
         if (minuteValue === null || minuteValue === undefined || minuteValue === '' || Number(minuteValue) < 0 || Number(minuteValue) > 59) {
-          console.error('Erro: minute inválido ou vazio');
           showToast('Error', 'Para frequência Hourly, o campo "Minute" é obrigatório e deve ser entre 0 e 59', 'error');
           return;
         }
@@ -317,15 +312,16 @@ export default function Schedule() {
       }
 
       if (isEditMode && id) {
-        // TODO: Implementar update quando necessário
         const updateInput: IScheduleUpdateInputDto = {
           frequencyId: data.frequencyId,
-          name: data.name,
+          name: data.name.trim(),
           priority: data.priority,
-          details: data.details,
+          details: data.details.trim(),
+          projectId: data.projectId,
+          machineId: data.machineId,
         };
         await scheduleService.updateSchedule(Number(id), updateInput);
-        showToast('Success', 'Schedule updated successfully', 'success');
+        showToast(t('common.states.success'), t('pages.schedule.updatedSuccess'), 'success');
         navigate('/scheduled');
       } else {
         const createInput: IScheduleCreateInputDto = {
@@ -357,10 +353,7 @@ export default function Schedule() {
   };
 
   const renderCronFields = () => {
-    // Converte para número para garantir comparação correta
     const freqId = Number(frequencyId);
-    console.log('renderCronFields - frequencyId:', frequencyId, 'tipo:', typeof frequencyId, 'convertido:', freqId);
-    
     switch (freqId) {
       case 1: // Minute
         return (
@@ -402,17 +395,8 @@ export default function Schedule() {
                       min="1"
                       step="1"
                       value={field.value || ''}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        console.log('Every onChange - valor recebido:', value, 'tipo:', typeof value);
-                        console.log('Every onChange - field.value antes:', field.value);
-                        field.onChange(value);
-                        console.log('Every onChange - field.onChange chamado com:', value);
-                      }}
-                      onBlur={(e) => {
-                        field.onBlur();
-                        console.log('Every onBlur - valor final:', e.target.value);
-                      }}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      onBlur={field.onBlur}
                       name={field.name}
                       ref={field.ref}
                       className={fieldInputClass}
@@ -450,17 +434,8 @@ export default function Schedule() {
                       max="59"
                       step="1"
                       value={field.value || ''}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        console.log('Minute onChange - valor recebido:', value, 'tipo:', typeof value);
-                        console.log('Minute onChange - field.value antes:', field.value);
-                        field.onChange(value);
-                        console.log('Minute onChange - field.onChange chamado com:', value);
-                      }}
-                      onBlur={(e) => {
-                        field.onBlur();
-                        console.log('Minute onBlur - valor final:', e.target.value);
-                      }}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      onBlur={field.onBlur}
                       name={field.name}
                       ref={field.ref}
                       className={fieldInputClass}
@@ -639,10 +614,10 @@ export default function Schedule() {
           onClick={() => navigate('/scheduled')}
           className="text-primary hover:text-primary/80 mb-4 font-medium text-base"
         >
-          ← Voltar
+          ← {t('common.buttons.back')}
         </button>
         <h1 className="text-4xl font-semibold text-text-primary">
-          {isEditMode ? 'Edit Schedule' : 'Create Schedule'}
+          {isEditMode ? t('pages.schedule.editSchedule') : t('pages.schedule.createSchedule')}
         </h1>
       </div>
 
@@ -654,7 +629,7 @@ export default function Schedule() {
               <CalendarDaysIcon className="w-9 h-9" aria-hidden />
             </div>
             <h2 className="text-3xl font-semibold text-white mb-3">
-              {isEditMode ? 'Editar agendamento' : 'Novo agendamento'}
+              {isEditMode ? t('pages.schedule.editSchedule') : t('pages.schedule.newSchedule')}
             </h2>
             <div className="text-xl text-white/90 leading-relaxed space-y-4">
               {isEditMode ? (
@@ -706,85 +681,134 @@ export default function Schedule() {
           </div>
 
           <div>
-            <FormSelect
-              label="Project"
-              required
-              error={errors.projectId?.message}
-              {...register('projectId', {
-                required: 'Project is required',
-                min: { value: 1, message: 'Project is required' },
-              })}
-            >
-              <option value={0}>Filter the project</option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </FormSelect>
+            <Controller
+              name="projectId"
+              control={control}
+              rules={{ required: 'Project is required', min: { value: 1, message: 'Project is required' } }}
+              render={({ field }) => (
+                <FormSelect
+                  label="Project"
+                  required
+                  error={errors.projectId?.message}
+                  name={field.name}
+                  value={field.value}
+                  onChange={(e) => {
+                    if (e != null && e.target != null) {
+                      const v = Number(e.target.value);
+                      if (!Number.isNaN(v)) field.onChange(v);
+                    }
+                  }}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                >
+                  <option value={0}>Select option</option>
+                  {projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </FormSelect>
+              )}
+            />
           </div>
 
           <div>
-            <FormSelect
-              label="Priority"
-              required
-              error={errors.priority?.message}
-              {...register('priority', {
-                required: 'Priority is required',
-                min: { value: 1, message: 'Priority is required' },
-              })}
-            >
-              <option value={0}>Filter the priority</option>
-              {priorities.map((priority) => (
-                <option key={priority.id} value={priority.id}>
-                  {priority.name}
-                </option>
-              ))}
-            </FormSelect>
+            <Controller
+              name="priority"
+              control={control}
+              rules={{ required: 'Priority is required', min: { value: 1, message: 'Priority is required' } }}
+              render={({ field }) => (
+                <FormSelect
+                  label="Priority"
+                  required
+                  error={errors.priority?.message}
+                  name={field.name}
+                  value={field.value}
+                  onChange={(e) => {
+                    if (e != null && e.target != null) {
+                      const v = Number(e.target.value);
+                      if (!Number.isNaN(v)) field.onChange(v);
+                    }
+                  }}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                >
+                  <option value={0}>Select option</option>
+                  {priorities.map((priority) => (
+                    <option key={priority.id} value={priority.id}>
+                      {priority.name}
+                    </option>
+                  ))}
+                </FormSelect>
+              )}
+            />
           </div>
 
           <div>
-            <FormSelect
-              label="Frequency"
-              required
-              error={errors.frequencyId?.message}
-              {...register('frequencyId', {
-                required: 'Frequency is required',
-                min: { value: 1, message: 'Frequency is required' },
-                valueAsNumber: true,
-              })}
-              onChange={(e) => {
-                const value = Number(e.target.value);
-                setValue('frequencyId', value, { shouldValidate: true });
-                console.log('Frequency onChange - valor selecionado:', value, 'tipo:', typeof value);
-              }}
-            >
-              <option value={0}>Filter the frequency</option>
-              {frequencies.map((frequency) => (
-                <option key={frequency.id} value={frequency.id}>
-                  {frequency.name}
-                </option>
-              ))}
-            </FormSelect>
+            <Controller
+              name="frequencyId"
+              control={control}
+              rules={{ required: 'Frequency is required', min: { value: 1, message: 'Frequency is required' } }}
+              render={({ field }) => (
+                <FormSelect
+                  label="Frequency"
+                  required
+                  error={errors.frequencyId?.message}
+                  name={field.name}
+                  value={field.value}
+                  onChange={(e) => {
+                    if (e != null && e.target != null) {
+                      const v = Number(e.target.value);
+                      if (!Number.isNaN(v)) {
+                        field.onChange(v);
+                        setValue('frequencyId', v, { shouldValidate: true });
+                      }
+                    }
+                  }}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                >
+                  <option value={0}>Select option</option>
+                  {frequencies.map((frequency) => (
+                    <option key={frequency.id} value={frequency.id}>
+                      {frequency.name}
+                    </option>
+                  ))}
+                </FormSelect>
+              )}
+            />
           </div>
 
           <div>
-            <FormSelect
-              label="Machine"
-              required
-              error={errors.machineId?.message}
-              {...register('machineId', {
-                required: 'Machine is required',
-                min: { value: 1, message: 'Machine is required' },
-              })}
-            >
-              <option value={0}>Filter the machine</option>
-              {machines.map((machine) => (
-                <option key={machine.id} value={machine.id}>
-                  {machine.machineName}
-                </option>
-              ))}
-            </FormSelect>
+            <Controller
+              name="machineId"
+              control={control}
+              rules={{ required: 'Machine is required', min: { value: 1, message: 'Machine is required' } }}
+              render={({ field }) => (
+                <FormSelect
+                  label="Machine"
+                  required
+                  error={errors.machineId?.message}
+                  name={field.name}
+                  value={field.value}
+                  onChange={(e) => {
+                    if (e != null && e.target != null) {
+                      const v = Number(e.target.value);
+                      if (!Number.isNaN(v)) field.onChange(v);
+                    }
+                  }}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                >
+                  <option value={0}>Select option</option>
+                  {machines.map((machine) => (
+                    <option key={machine.id} value={machine.id}>
+                      {machine.machineName}
+                    </option>
+                  ))}
+                </FormSelect>
+              )}
+            />
           </div>
 
           <div className="md:col-span-2">
@@ -792,7 +816,7 @@ export default function Schedule() {
               label="Details"
               required
               rows={4}
-              placeholder="Schedule details"
+              placeholder={t('pages.schedule.detailsPlaceholder')}
               error={errors.details?.message}
               {...register('details', {
                 required: 'Details is required',
@@ -811,9 +835,9 @@ export default function Schedule() {
 
         <div className="mt-8 flex justify-end gap-3">
           <FormButton variant="secondary" type="button" onClick={() => navigate('/scheduled')}>
-            Cancel
+            {t('common.buttons.cancel')}
           </FormButton>
-          <FormButton type="submit">{isEditMode ? 'Edit' : 'Create'}</FormButton>
+          <FormButton type="submit">{isEditMode ? t('pages.schedule.edit') : t('pages.schedule.create')}</FormButton>
         </div>
       </form>
       </div>

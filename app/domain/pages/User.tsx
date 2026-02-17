@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { usersService } from '../../service/users.service';
 import { rolesService } from '../../service/roles.service';
 import { companyUserService } from '../../service/companyUser.service';
 import { userRoleService } from '../../service/userRole.service';
+import { useNotificationStore } from '../../service/notification.service';
 import type {
   IUserCreateInputDto,
   IUserUpdateInputDto,
@@ -21,9 +23,11 @@ interface UserFormData {
 }
 
 export default function User() {
+  const { t } = useTranslation('translation');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEditMode = !!id;
+  const showToast = useNotificationStore((state) => state.showToast);
   const [roles, setRoles] = useState<IRolesGetOutputDto[]>([]);
   const [selectedRoleIds, setSelectedRoleIds] = useState<number[]>([]);
   const [tempSelected, setTempSelected] = useState<number[]>([]);
@@ -118,12 +122,12 @@ export default function User() {
 
   const onSubmit = async (data: UserFormData) => {
     if (password !== confirmPassword) {
-      alert('As senhas não coincidem');
+      showToast(t('common.states.error'), t('pages.user.passwordMismatch'), 'error');
       return;
     }
 
     if (selectedRoleIds.length === 0) {
-      alert('Selecione pelo menos um role');
+      showToast(t('common.warning'), t('pages.user.selectOneRole'), 'warning');
       return;
     }
 
@@ -134,7 +138,7 @@ export default function User() {
           phoneNumber: data.phoneNumber,
         };
         await usersService.updateUser(id, updateUser);
-        alert('Usuário atualizado com sucesso');
+        showToast(t('common.states.success'), t('pages.user.updateSuccess'), 'success');
         navigate('/users');
       } else {
         const inputUser: IUserCreateInputDto = {
@@ -154,12 +158,12 @@ export default function User() {
           roleId: selectedRoleIds,
         });
 
-        alert('Usuário criado com sucesso');
+        showToast(t('common.states.success'), t('pages.user.createSuccess'), 'success');
         navigate('/users');
       }
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Falha ao salvar usuário';
-      alert(`Erro: ${message}`);
+      const message = error.response?.data?.message || t('pages.user.saveError');
+      showToast(t('common.states.error'), message, 'error');
     }
   };
 
@@ -170,30 +174,30 @@ export default function User() {
           onClick={() => navigate('/users')}
           className="text-indigo-600 hover:text-indigo-900 mb-4"
         >
-          ← Voltar
+          ← {t('pages.user.back')}
         </button>
         <h1 className="text-2xl font-bold text-gray-900">
-          {isEditMode ? 'Edit User' : 'Create User'}
+          {isEditMode ? t('pages.user.titleEdit') : t('pages.user.titleCreate')}
         </h1>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="bg-white shadow rounded-lg p-6">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Name</label>
+            <label className="block text-sm font-medium text-gray-700">{t('pages.user.name')}</label>
             <input
               type="text"
-              {...register('name', { required: 'Nome é obrigatório' })}
+              {...register('name', { required: t('pages.user.nameRequired') })}
               className="mt-1 block w-full px-3 py-3 text-base border-0 border-b-2 border-gray-300 bg-transparent focus:outline-none focus:border-indigo-600 focus:ring-0 transition-colors"
             />
             {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">CPF</label>
+            <label className="block text-sm font-medium text-gray-700">{t('pages.user.cpf')}</label>
             <input
               type="text"
-              {...register('cpf', { required: 'CPF é obrigatório' })}
+              {...register('cpf', { required: t('pages.user.cpfRequired') })}
               disabled={isEditMode}
               className="mt-1 block w-full px-3 py-3 text-base border-0 border-b-2 border-gray-300 bg-transparent focus:outline-none focus:border-indigo-600 focus:ring-0 transition-colors disabled:bg-gray-50 disabled:border-gray-200"
             />
@@ -201,10 +205,10 @@ export default function User() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <label className="block text-sm font-medium text-gray-700">{t('pages.user.email')}</label>
             <input
               type="email"
-              {...register('email', { required: 'Email é obrigatório' })}
+              {...register('email', { required: t('pages.user.emailRequired') })}
               disabled={isEditMode}
               className="mt-1 block w-full px-3 py-3 text-base border-0 border-b-2 border-gray-300 bg-transparent focus:outline-none focus:border-indigo-600 focus:ring-0 transition-colors disabled:bg-gray-50 disabled:border-gray-200"
             />
@@ -212,10 +216,10 @@ export default function User() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+            <label className="block text-sm font-medium text-gray-700">{t('pages.user.phone')}</label>
             <input
               type="text"
-              {...register('phoneNumber', { required: 'Telefone é obrigatório' })}
+              {...register('phoneNumber', { required: t('pages.user.phoneRequired') })}
               className="mt-1 block w-full px-3 py-3 text-base border-0 border-b-2 border-gray-300 bg-transparent focus:outline-none focus:border-indigo-600 focus:ring-0 transition-colors"
             />
             {errors.phoneNumber && (
@@ -226,10 +230,10 @@ export default function User() {
           {!isEditMode && (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Password</label>
+                <label className="block text-sm font-medium text-gray-700">{t('pages.user.password')}</label>
                 <input
                   type="password"
-                  {...register('password', { required: 'Senha é obrigatória' })}
+                  {...register('password', { required: t('pages.user.passwordRequired') })}
                   className="mt-1 block w-full px-3 py-3 text-base border-0 border-b-2 border-gray-300 bg-transparent focus:outline-none focus:border-indigo-600 focus:ring-0 transition-colors"
                 />
                 {errors.password && (
@@ -239,18 +243,18 @@ export default function User() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Confirm Password
+                  {t('pages.user.confirmPassword')}
                 </label>
                 <input
                   type="password"
-                  {...register('confirmPassword', { required: 'Confirmação de senha é obrigatória' })}
+                  {...register('confirmPassword', { required: t('pages.user.confirmPasswordRequired') })}
                   className="mt-1 block w-full px-3 py-3 text-base border-0 border-b-2 border-gray-300 bg-transparent focus:outline-none focus:border-indigo-600 focus:ring-0 transition-colors"
                 />
                 {errors.confirmPassword && (
                   <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message}</p>
                 )}
                 {password && confirmPassword && password !== confirmPassword && (
-                  <p className="mt-1 text-sm text-red-600">As senhas não coincidem</p>
+                  <p className="mt-1 text-sm text-red-600">{t('pages.user.passwordMismatch')}</p>
                 )}
               </div>
             </>
@@ -259,10 +263,10 @@ export default function User() {
 
         {/* Role Selection */}
         <div className="mt-8">
-          <label className="block text-sm font-medium text-gray-700 mb-4">Roles</label>
+          <label className="block text-sm font-medium text-gray-700 mb-4">{t('pages.user.roles')}</label>
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <h3 className="text-sm font-medium mb-2">Available Roles</h3>
+              <h3 className="text-sm font-medium mb-2">{t('pages.user.availableRoles')}</h3>
               <div className="border rounded-md p-2 h-64 overflow-y-auto">
                 {availableRoles.map((role) => (
                   <div
@@ -295,7 +299,7 @@ export default function User() {
               </button>
             </div>
             <div>
-              <h3 className="text-sm font-medium mb-2">Selected Roles</h3>
+              <h3 className="text-sm font-medium mb-2">{t('pages.user.selectedRoles')}</h3>
               <div className="border rounded-md p-2 h-64 overflow-y-auto">
                 {selectedRoleIds.map((roleId) => (
                   <div
@@ -319,7 +323,7 @@ export default function User() {
             type="submit"
             className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
-            {isEditMode ? 'Update' : 'Create'}
+            {isEditMode ? t('common.buttons.save') : t('common.buttons.create')}
           </button>
         </div>
       </form>

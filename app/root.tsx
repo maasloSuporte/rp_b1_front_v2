@@ -9,6 +9,7 @@ import type { LinksFunction } from "react-router";
 import type { ReactNode } from "react";
 import { ErrorBoundary } from "./ErrorBoundary";
 import "./app.css";
+import "./translate";
 import Notification from "./components/Notification";
 import ModalProvider from "./components/modals/ModalProvider";
 

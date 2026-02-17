@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { queuesService } from '../../service/queues.service';
 import DynamicTable from '../DynamicTable';
 import Loading from '../Loading';
@@ -6,54 +7,23 @@ import type { TableColumn, ActionMenuItem } from '../../types/table';
 import type { IPaginationOutputDto, IQueueGetOutputDto } from '../../types/models';
 
 export default function Historical() {
+  const { t } = useTranslation('translation');
   const [data, setData] = useState<any[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [queryString, setQueryString] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const columns: TableColumn[] = [
-    {
-      key: 'name',
-      label: 'Name',
-      filterable: true,
-      sortable: false,
-      filterType: 'text',
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      filterable: true,
-      sortable: false,
-      filterType: 'text',
-    },
-    {
-      key: 'processedItems',
-      label: 'Processed Items',
-      filterable: false,
-      sortable: false,
-      filterType: 'text',
-    },
-    {
-      key: 'lastProcessed',
-      label: 'Last Processed',
-      filterable: false,
-      sortable: true,
-      filterType: 'text',
-    },
-    {
-      key: 'actions',
-      label: 'Actions',
-      type: 'action'
-    }
-  ];
+  const columns: TableColumn[] = useMemo(() => [
+    { key: 'name', label: t('pages.queues.name'), filterable: true, sortable: false, filterType: 'text' },
+    { key: 'status', label: t('pages.queues.status'), filterable: true, sortable: false, filterType: 'text' },
+    { key: 'processedItems', label: t('pages.queues.processedItems'), filterable: false, sortable: false, filterType: 'text' },
+    { key: 'lastProcessed', label: t('pages.queues.lastProcessed'), filterable: false, sortable: true, filterType: 'text' },
+    { key: 'actions', label: t('pages.queues.actions'), type: 'action' },
+  ], [t]);
 
-  const actionMenuItems: ActionMenuItem[] = [
-    {
-      label: 'View Details',
-      action: 'view',
-      icon: 'eye'
-    }
-  ];
+  const actionMenuItems: ActionMenuItem[] = useMemo(() => [
+    { label: t('pages.queues.viewDetails'), action: 'view', icon: 'eye' },
+  ], [t]);
 
   useEffect(() => {
     loadHistoricalQueues();
@@ -94,12 +64,12 @@ export default function Historical() {
   };
 
   if (loading) {
-    return <Loading text="Carregando histórico de queues..." />;
+    return <Loading text={t('pages.queues.loadingHistorical')} />;
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <h2 className="text-3xl sm:text-4xl font-semibold text-text-primary mb-8">Historical Queues</h2>
+      <h2 className="text-3xl sm:text-4xl font-semibold text-text-primary mb-8">{t('pages.queues.titleHistorical')}</h2>
       <section className="mt-6">
       <DynamicTable
         columns={columns}

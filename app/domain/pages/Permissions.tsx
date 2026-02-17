@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { permissionsService } from '../../service/permissions.service';
 import { rolesService } from '../../service/roles.service';
@@ -26,6 +27,7 @@ interface GroupedPermission {
 }
 
 export default function Permissions() {
+  const { t } = useTranslation('translation');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEditMode = !!id;
@@ -82,19 +84,22 @@ export default function Permissions() {
     const grouped: { [key: string]: GroupedPermission } = {};
 
     for (const perm of perms) {
-      const [resource, action] = perm.permission.split('/');
+      const parts = perm.permission.split('/');
+      const resource = parts[0] ?? '';
+      const action = parts[1] ?? '';
       const mappedAction = actionMap[action];
 
       if (!mappedAction) continue; // ignora ações desconhecidas
 
-      if (!grouped[resource]) {
-        grouped[resource] = {
-          resource,
+      const resourceKey = resource.toLowerCase();
+      if (!grouped[resourceKey]) {
+        grouped[resourceKey] = {
+          resource: resourceKey === 'roles' ? 'Roles' : resource,
           actions: {},
         };
       }
 
-      grouped[resource].actions[mappedAction as keyof GroupedPermission['actions']] = perm.id;
+      grouped[resourceKey].actions[mappedAction as keyof GroupedPermission['actions']] = perm.id;
     }
 
     setGroupedPermissions(Object.values(grouped));
@@ -128,7 +133,7 @@ export default function Permissions() {
 
   const onSubmit = async (data: PermissionsFormData) => {
     if (!data.roleName || data.roleName.length < 5 || selectedPermissions.length === 0) {
-      showToast('Alerta', 'Os campos com * são obrigatórios', 'warning');
+      showToast(t('common.warning'), t('pages.permissions.requiredFieldsWarning'), 'warning');
       return;
     }
 
@@ -146,7 +151,7 @@ export default function Permissions() {
         };
 
         await rolesPermissionsService.createRolesPermissions(rolePermission);
-        showToast('Sucess', 'Permission group edit successfully', 'success');
+        showToast(t('common.states.success'), t('pages.permissions.editSuccess'), 'success');
         navigate('/roles');
       } else {
         await rolesService.createRole(inputRole);
@@ -157,12 +162,12 @@ export default function Permissions() {
         };
 
         await rolesPermissionsService.createRolesPermissions(rolePermission);
-        showToast('Sucess', 'Permission group created successfully', 'success');
+        showToast(t('common.states.success'), t('pages.permissions.createSuccess'), 'success');
         navigate('/roles');
       }
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Falha ao salvar permissões';
-      showToast('Error', message, 'error');
+      const message = error.response?.data?.message || t('pages.permissions.saveError');
+      showToast(t('common.states.error'), message, 'error');
     }
   };
 
@@ -175,33 +180,33 @@ export default function Permissions() {
       <div className="permissions-container">
         {/* Cabeçalho */}
         <header className="header">
-          <h1>Permissions</h1>
+          <h1>{t('pages.permissions.title')}</h1>
         </header>
 
         {/* Seção de Permissões dos Usuários */}
         <section className="permissions-section">
           {/* Campo de pesquisa de usuários */}
           <div className="input-group">
-            <label htmlFor="user-search">Name *</label>
+            <label htmlFor="user-search">{t('pages.permissions.nameRequired')}</label>
             <input
               type="text"
               id="user-search"
               className="input-field"
-              placeholder="Enter user name"
+              placeholder={t('pages.permissions.placeholder')}
               {...register('roleName', {
-                required: 'Role name is required.',
+                required: t('pages.permissions.roleNameRequired'),
                 minLength: {
                   value: 5,
-                  message: 'Role must be at least 5 characters long.',
+                  message: t('pages.permissions.roleNameMinLength'),
                 },
               })}
             />
             {errors.roleName && (
               <span className="error-message">
                 {errors.roleName.type === 'required'
-                  ? 'Role name is required.'
+                  ? t('pages.permissions.roleNameRequired')
                   : errors.roleName.type === 'minLength'
-                  ? 'Role must be at least 5 characters long.'
+                  ? t('pages.permissions.roleNameMinLength')
                   : errors.roleName.message}
               </span>
             )}
@@ -214,11 +219,11 @@ export default function Permissions() {
             <table className="permissions-table">
               <thead>
                 <tr>
-                  <th style={{ textAlign: 'left' }}>Permissions</th>
-                  <th>View</th>
-                  <th>Edit</th>
-                  <th>Create</th>
-                  <th>Delete</th>
+                  <th style={{ textAlign: 'left' }}>{t('pages.permissions.permissions')}</th>
+                  <th>{t('pages.permissions.view')}</th>
+                  <th>{t('pages.permissions.edit')}</th>
+                  <th>{t('pages.permissions.create')}</th>
+                  <th>{t('pages.permissions.delete')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -227,46 +232,54 @@ export default function Permissions() {
                     <td style={{ textAlign: 'left' }}>{group.resource}</td>
 
                     <td>
-                      {group.actions.view && (
+                      {group.actions.view != null ? (
                         <input
                           type="checkbox"
                           className="permission-radio"
-                          checked={selectedPermissions.includes(group.actions.view!)}
+                          checked={selectedPermissions.includes(group.actions.view)}
                           onChange={(e) => togglePermission(group.actions.view!, e)}
                         />
+                      ) : (
+                        <span className="permission-empty">—</span>
                       )}
                     </td>
 
                     <td>
-                      {group.actions.create && (
+                      {group.actions.edit != null ? (
                         <input
                           type="checkbox"
                           className="permission-radio"
-                          checked={selectedPermissions.includes(group.actions.create!)}
-                          onChange={(e) => togglePermission(group.actions.create!, e)}
-                        />
-                      )}
-                    </td>
-
-                    <td>
-                      {group.actions.edit && (
-                        <input
-                          type="checkbox"
-                          className="permission-radio"
-                          checked={selectedPermissions.includes(group.actions.edit!)}
+                          checked={selectedPermissions.includes(group.actions.edit)}
                           onChange={(e) => togglePermission(group.actions.edit!, e)}
                         />
+                      ) : (
+                        <span className="permission-empty">—</span>
                       )}
                     </td>
 
                     <td>
-                      {group.actions.delete && (
+                      {group.actions.create != null ? (
                         <input
                           type="checkbox"
                           className="permission-radio"
-                          checked={selectedPermissions.includes(group.actions.delete!)}
+                          checked={selectedPermissions.includes(group.actions.create)}
+                          onChange={(e) => togglePermission(group.actions.create!, e)}
+                        />
+                      ) : (
+                        <span className="permission-empty">—</span>
+                      )}
+                    </td>
+
+                    <td>
+                      {group.actions.delete != null ? (
+                        <input
+                          type="checkbox"
+                          className="permission-radio"
+                          checked={selectedPermissions.includes(group.actions.delete)}
                           onChange={(e) => togglePermission(group.actions.delete!, e)}
                         />
+                      ) : (
+                        <span className="permission-empty">—</span>
                       )}
                     </td>
                   </tr>
@@ -279,10 +292,10 @@ export default function Permissions() {
         {/* Botões Cancel e Create */}
         <div className="action-buttons">
           <button type="button" className="cancel-btn" onClick={cancelPermission}>
-            Cancel
+            {t('common.buttons.cancel')}
           </button>
           <button type="submit" className="create-btn" disabled={!isValid}>
-            {isEditMode ? 'Edit' : 'Create'}
+            {isEditMode ? t('common.buttons.edit') : t('common.buttons.create')}
           </button>
         </div>
       </div>
@@ -387,6 +400,11 @@ export default function Permissions() {
         .permission-radio:checked {
           background-color: #FB7F0D;
           box-shadow: inset 0 0 0 3px white;
+        }
+
+        .permission-empty {
+          color: #999;
+          font-size: 14px;
         }
 
         .action-buttons {

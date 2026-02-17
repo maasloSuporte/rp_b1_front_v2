@@ -14,83 +14,84 @@ export interface NavItem {
   ddType?: string;
 }
 
+/** Chaves de tradução para itens do menu (nav). Use t(key) no componente. */
 export const navItems: NavItem[] = [
   {
-    navCap: 'DASHBOARDS',
+    navCap: 'nav.dashboards',
     chipClass: 'title-sidebar'
   },
   {
-    displayName: 'Home',
+    displayName: 'nav.home',
     iconName: 'home',
     route: '/dashboard',
   },
   {
-    navCap: 'PROJECTS',
+    navCap: 'nav.projects',
     chipClass: 'title-sidebar'
   },
   {
-    displayName: 'Automation',
+    displayName: 'nav.automation',
     iconName: 'automation',
     children: [
       {
-        displayName: 'Automation',
+        displayName: 'nav.automation',
         route: '/automation',
       },
       {
-        displayName: 'Create Project',
+        displayName: 'nav.createProject',
         route: '/project',
       },
     ],
   },
   {
-    navCap: 'MANAGE',
+    navCap: 'nav.manage',
     chipClass: 'title-sidebar'
   },
   {
-    displayName: 'Manage',
+    displayName: 'nav.manage',
     iconName: 'manage',
     children: [
       {
-        displayName: 'Scheduled',
+        displayName: 'nav.scheduled',
         chipClass: 'children',
         route: '/scheduled',
       },
       {
-        displayName: 'Jobs',
+        displayName: 'nav.jobs',
         chipClass: 'children',
         route: '/jobs',
       },
       {
-        displayName: 'Packages',
+        displayName: 'nav.packages',
         chipClass: 'children',
         route: '/packages',
       },
       {
-        displayName: 'Machines',
+        displayName: 'nav.machines',
         chipClass: 'children',
         route: '/machines',
       },
       {
-        displayName: 'Assets',
+        displayName: 'nav.assets',
         chipClass: 'children',
         route: '/assets',
       }
     ],
   },
   {
-    navCap: 'ADMINISTRATION',
+    navCap: 'nav.administration',
     chipClass: 'title-sidebar'
   },
   {
-    displayName: 'Administration',
+    displayName: 'nav.administration',
     iconName: 'administration',
     children: [
       {
-        displayName: 'Users',
+        displayName: 'nav.users',
         route: '/users',
       },
       {
-        displayName: 'Group permissions',
+        displayName: 'nav.groupPermissions',
         route: '/roles',
       },
     ],

@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { companyUserService } from '../../service/companyUser.service';
 import { usersService } from '../../service/users.service';
 import { useModalStore } from '../../service/modal.service';
@@ -9,6 +10,7 @@ import type { TableColumn, ActionMenuItem } from '../../types/table';
 import type { ICompanyUserGetUsersOutputDto, IPaginationOutputDto } from '../../types/models';
 
 export default function Users() {
+  const { t } = useTranslation('translation');
   const navigate = useNavigate();
   const confirmDelete = useModalStore((state) => state.confirmDelete);
   const confirmEnable = useModalStore((state) => state.confirmEnable);
@@ -16,76 +18,42 @@ export default function Users() {
   const [data, setData] = useState<any[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [queryString, setQueryString] = useState('SortField=id&SortOrder=asc&PageNumber=1&PageSize=100');
+  const [roleFilterOptions, setRoleFilterOptions] = useState<{ id: number; label: string }[]>([]);
 
-  const columns: TableColumn[] = [
-    {
-      key: 'email',
-      sortKey: 'User.Email',
-      label: 'Email',
-      filterable: true,
-      sortable: true,
-      filterType: 'text',
-    },
-    {
-      key: 'role',
-      label: 'Role',
-      filterable: true,
-      sortable: false,
-      filterType: 'select',
-      selectMode: 'multiple',
-      filterOptions: []
-    },
-    {
-      key: 'active',
-      label: 'Status',
-      filterable: true,
-      filterType: 'select',
-      selectMode: 'single',
-      sortable: true,
-      filterOptions: [
-        { id: 'true', label: 'Ativo' },
-        { id: 'false', label: 'Inativo' }
-      ]
-    },
-    {
-      key: 'actions',
-      label: 'Actions',
-      type: 'action'
-    }
-  ];
+  const columns: TableColumn[] = useMemo(
+    () => [
+      { key: 'email', sortKey: 'User.Email', label: t('pages.users.email'), filterable: true, sortable: true, filterType: 'text' },
+      { key: 'role', label: t('pages.users.role'), filterable: true, sortable: false, filterType: 'select', selectMode: 'multiple', filterOptions: roleFilterOptions },
+      {
+        key: 'active',
+        label: t('pages.automation.columnStatus'),
+        filterable: true,
+        filterType: 'select',
+        selectMode: 'single',
+        sortable: true,
+        filterOptions: [
+          { id: 'true', label: t('common.status.active') },
+          { id: 'false', label: t('common.status.inactive') },
+        ],
+      },
+      { key: 'actions', label: t('common.actions.label'), type: 'action' },
+    ],
+    [t, roleFilterOptions]
+  );
 
-  const actionMenuItems: ActionMenuItem[] = [
-    {
-      label: 'Editar',
-      action: 'edit',
-      icon: 'edit'
-    },
-    {
-      label: 'Desativar',
-      action: 'disable',
-      icon: 'block',
-      showCondition: (item: any) => item.activeValue
-    },
-    {
-      label: 'Ativar',
-      action: 'enable',
-      icon: 'check_circle',
-      showCondition: (item: any) => !item.activeValue
-    }
-  ];
-
-
+  const actionMenuItems: ActionMenuItem[] = useMemo(
+    () => [
+      { label: t('common.buttons.edit'), action: 'edit', icon: 'edit' },
+      { label: t('pages.users.disable'), action: 'disable', icon: 'block', showCondition: (item: any) => item.activeValue },
+      { label: t('pages.users.enable'), action: 'enable', icon: 'check_circle', showCondition: (item: any) => !item.activeValue },
+    ],
+    [t]
+  );
 
   const loadRoles = async () => {
     try {
       const roles = await companyUserService.getRoles();
-      const roleColumn = columns.find(col => col.key === 'rolesId');
-      if (roleColumn) {
-        roleColumn.filterOptions = roles.map(role => ({
-          id: role.id,
-          label: role.name
-        }));
-      }
+      setRoleFilterOptions(roles.map((role) => ({ id: role.id, label: role.name })));
     } catch (error) {
       console.error('Erro ao carregar roles:', error);
     }
@@ -94,15 +62,13 @@ export default function Users() {
   const loadUsers = async () => {
     try {
       const result: IPaginationOutputDto<ICompanyUserGetUsersOutputDto> = await companyUserService.getAllUsers(queryString);
-      console.log(result);
-      
       setTotalItems(result.totalItems);
       setData(result.items.map((x: ICompanyUserGetUsersOutputDto) => ({
         id: x.userId,
         email: x.userEmail,
         role: x.userRoles.map((y: string) => y).join(', ') || '',
         rolesId: (x.userRoles as string[])?.map((y: string) => y).join(', ') || '',
-        active: x.userActive ? 'Ativo' : 'Inativo',
+        active: x.userActive ? t('common.status.active') : t('common.status.inactive'),
         activeValue: x.userActive,
       })));
     } catch (error) {
@@ -127,10 +93,10 @@ export default function Users() {
               id: Number(event.item.id),
               callerEmail: event.item.email
             });
-            showToast('Success', 'User successfully disabled', 'success');
+            showToast(t('common.states.success'), t('pages.users.disableSuccess'), 'success');
             loadUsers();
           } catch (error) {
-            showToast('Error', 'Failed to disable user', 'error');
+            showToast(t('common.states.error'), t('pages.users.disableError'), 'error');
           }
         }
         break;
@@ -144,10 +110,10 @@ export default function Users() {
               id: Number(event.item.id),
               callerEmail: event.item.email
             });
-            showToast('Success', 'User successfully active', 'success');
+            showToast(t('common.states.success'), t('pages.users.enableSuccess'), 'success');
             loadUsers();
           } catch (error) {
-            showToast('Error', 'Failed to enable user', 'error');
+            showToast(t('common.states.error'), t('pages.users.enableError'), 'error');
           }
         }
         break;
@@ -166,12 +132,12 @@ export default function Users() {
   return (
     <div className="min-h-screen bg-background">
       <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
-        <h1 className="text-3xl sm:text-4xl font-semibold text-text-primary">Users</h1>
+        <h1 className="text-3xl sm:text-4xl font-semibold text-text-primary">{t('pages.users.title')}</h1>
         <button
           onClick={() => navigate('/users/create')}
           className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-medium text-white bg-orange hover:bg-orange/90 shadow-sm hover:shadow transition-all duration-200"
         >
-          Create User
+          {t('pages.users.createUser')}
         </button>
       </div>
       <section className="mt-6">

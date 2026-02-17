@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { TableColumn, ActionMenuItem } from '../types/table';
 
 const actionIcons: Record<string, React.ReactNode> = {
@@ -17,6 +18,18 @@ const actionIcons: Record<string, React.ReactNode> = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
     </svg>
   ),
+  play: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
+  preview: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+    </svg>
+  ),
 };
 
 interface DynamicTableProps {
@@ -29,6 +42,10 @@ interface DynamicTableProps {
   showFirstLastButtons?: boolean;
   onActionClick?: (event: { action: string; item: any }) => void;
   onQueryParamsChange?: (queryString: string) => void;
+  /** IDs das linhas selecionadas (para coluna type: 'checkbox') */
+  selectedRowIds?: number[];
+  /** Callback ao marcar/desmarcar checkbox da linha */
+  onSelectionChange?: (id: number, selected: boolean) => void;
 }
 
 export default function DynamicTable({
@@ -41,7 +58,10 @@ export default function DynamicTable({
   showFirstLastButtons = true,
   onActionClick,
   onQueryParamsChange,
+  selectedRowIds = [],
+  onSelectionChange,
 }: DynamicTableProps) {
+  const { t } = useTranslation('translation');
   const [columnFilters, setColumnFilters] = useState<{ [key: string]: any }>({});
   const [selectedFilterColumn, setSelectedFilterColumn] = useState<string>('');
   const [currentSort, setCurrentSort] = useState<{ column: string; direction: 'asc' | 'desc' }>({
@@ -193,7 +213,7 @@ export default function DynamicTable({
               onChange={(e) => setSelectedFilterColumn(e.target.value)}
               className="rounded-lg border border-border bg-white px-4 py-2.5 text-base text-text-primary focus:border-purple focus:ring-2 focus:ring-purple/20 outline-none min-w-[180px]"
             >
-              <option value="">Filtrar por...</option>
+              <option value="">{t('common.table.filterPlaceholder')}</option>
               {filterableColumns.map((col) => (
                 <option key={col.key} value={col.key}>
                   {col.label}
@@ -205,7 +225,7 @@ export default function DynamicTable({
               selectedColumn.filterType === 'text' ? (
                 <input
                   type="text"
-                  placeholder={`Buscar em ${selectedColumn.label}...`}
+                  placeholder={t('common.table.searchIn', { label: selectedColumn.label })}
                   value={(columnFilters[selectedFilterColumn] ?? '') as string}
                   onChange={(e) => applyFilter(selectedFilterColumn, e.target.value)}
                   className="rounded-lg border border-border bg-white px-4 py-2.5 text-base text-text-primary placeholder:text-text-secondary focus:border-purple focus:ring-2 focus:ring-purple/20 outline-none min-w-[200px]"
@@ -218,7 +238,7 @@ export default function DynamicTable({
                   onChange={(e) => applyFilter(selectedFilterColumn, e.target.value)}
                   className="rounded-lg border border-border bg-white px-4 py-2.5 text-base text-text-primary focus:border-purple focus:ring-2 focus:ring-purple/20 outline-none min-w-[180px]"
                 >
-                  <option value="">Todos</option>
+                  <option value="">{t('common.table.all')}</option>
                   {selectedColumn.filterOptions?.map((opt) => (
                     <option key={String(opt.id)} value={opt.id}>
                       {opt.label}
@@ -236,8 +256,8 @@ export default function DynamicTable({
                 return v !== '' && v != null && (!Array.isArray(v) || v.length > 0);
               })}
               className="inline-flex items-center justify-center rounded-lg border border-border bg-white p-2.5 text-text-secondary hover:bg-error/10 hover:text-error hover:border-error/30 disabled:opacity-40 disabled:pointer-events-none transition-colors"
-              title="Limpar filtros"
-              aria-label="Limpar filtros"
+              title={t('common.table.clearFilters')}
+              aria-label={t('common.table.clearFilters')}
             >
               {actionIcons.trash}
             </button>
@@ -254,15 +274,31 @@ export default function DynamicTable({
                   className="px-6 py-5 text-left text-sm font-bold text-text-primary uppercase tracking-wider first:pl-8 last:pr-8"
                 >
                   <div className="flex items-center gap-2">
-                    <span>{column.label}</span>
-                    {column.sortable && (
+                    {column.type === 'checkbox' ? (
+                      <input
+                        type="checkbox"
+                        checked={data.length > 0 && data.every((r) => selectedRowIds.includes(r.id))}
+                        onChange={(e) => {
+                          if (onSelectionChange) {
+                            data.forEach((r) => onSelectionChange(r.id, e.target.checked));
+                          }
+                        }}
+                        className="rounded border-gray-300 text-purple focus:ring-purple"
+                        aria-label={t('common.table.selectAll')}
+                      />
+                    ) : (
+                      <>
+                        <span>{column.label}</span>
+                        {column.sortable && (
                       <button
                         onClick={() => onSort(column)}
                         className="p-1 rounded text-text-secondary hover:text-text-primary hover:bg-border transition-colors"
-                        aria-label={`Ordenar por ${column.label}`}
+                        aria-label={t('common.table.sortBy', { label: column.label })}
                       >
                         {getSortIcon(column)}
                       </button>
+                    )}
+                      </>
                     )}
                   </div>
                 </th>
@@ -277,10 +313,10 @@ export default function DynamicTable({
                   className="px-6 py-12 text-center first:pl-8 last:pr-8"
                 >
                   <p className="text-base text-text-secondary">
-                    Nenhum resultado encontrado na busca.
+                    {t('common.table.noResults')}
                   </p>
                   <p className="mt-1 text-sm text-text-secondary/80">
-                    Tente ajustar os filtros ou limpar a busca para ver mais resultados.
+                    {t('common.table.noResultsHint')}
                   </p>
                 </td>
               </tr>
@@ -297,7 +333,15 @@ export default function DynamicTable({
                       key={column.key}
                       className="px-6 py-5 text-base text-text-primary first:pl-8 last:pr-8"
                     >
-                      {column.type === 'action' ? (
+                      {column.type === 'checkbox' ? (
+                        <input
+                          type="checkbox"
+                          checked={selectedRowIds.includes(row.id)}
+                          onChange={(e) => onSelectionChange?.(row.id, e.target.checked)}
+                          className="rounded border-gray-300 text-purple focus:ring-purple"
+                          aria-label={`Selecionar ${row.id}`}
+                        />
+                      ) : column.type === 'action' ? (
                         <div className="flex items-center gap-1.5 flex-wrap">
                           {actionMenuItems
                             .filter((item) => !item.showCondition || item.showCondition(row))
@@ -336,14 +380,14 @@ export default function DynamicTable({
       <div className="mt-6 pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 bg-transparent">
         <div className="flex items-center gap-4 w-full sm:w-auto order-2 sm:order-1">
           <p className="text-base text-text-secondary">
-            Mostrando <span className="font-medium text-text-primary">{startItem}</span>
+            {t('common.table.showing')} <span className="font-medium text-text-primary">{startItem}</span>
             {startItem !== endItem && (
               <>–<span className="font-medium text-text-primary">{endItem}</span></>
             )}{' '}
-            de <span className="font-medium text-text-primary">{totalItems}</span>
+            {t('common.table.of')} <span className="font-medium text-text-primary">{totalItems}</span>
           </p>
           <div className="flex items-center gap-2">
-            <span className="text-base text-text-secondary">Por página</span>
+            <span className="text-base text-text-secondary">{t('common.table.perPage')}</span>
             <select
               value={currentPage.pageSize}
               onChange={(e) => onPageChange(0, Number(e.target.value))}
@@ -389,7 +433,7 @@ export default function DynamicTable({
             onClick={() => onPageChange(Math.min(totalPages - 1, currentPage.pageNumber + 1))}
             disabled={currentPage.pageNumber >= totalPages - 1}
             className="p-2 rounded-lg text-text-secondary hover:bg-white hover:text-purple disabled:opacity-40 disabled:pointer-events-none transition-colors border border-transparent hover:border-border/80"
-            aria-label="Próxima página"
+            aria-label={t('common.table.nextPage')}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -404,7 +448,7 @@ export default function DynamicTable({
           disabled={currentPage.pageNumber === 0}
           className="px-4 py-2 rounded-lg border border-border/80 text-sm font-medium text-text-primary bg-white hover:bg-purple-100/50 disabled:opacity-50"
         >
-          Anterior
+          {t('common.table.previous')}
         </button>
         <span className="py-2 text-sm text-text-secondary">
           {currentPage.pageNumber + 1} / {totalPages}
@@ -414,7 +458,7 @@ export default function DynamicTable({
           disabled={currentPage.pageNumber >= totalPages - 1}
           className="px-4 py-2 rounded-lg border border-border/80 text-sm font-medium text-text-primary bg-white hover:bg-purple-100/50 disabled:opacity-50"
         >
-          Próximo
+          {t('common.table.next')}
         </button>
       </div>
       </div>

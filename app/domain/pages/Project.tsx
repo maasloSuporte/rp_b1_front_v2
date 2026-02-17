@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { projectsService } from '../../service/projects.service';
 import { packagesService } from '../../service/packages.service';
@@ -24,6 +25,7 @@ interface ProjectFormData {
 }
 
 export default function Project() {
+  const { t } = useTranslation('translation');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEditMode = !!id;
@@ -148,7 +150,7 @@ export default function Project() {
         navigate('/automation');
       }
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Falha ao salvar projeto';
+      const message = error.response?.data?.message || t('pages.project.saveError');
       showToast('Error', message, 'error');
     }
   };
@@ -160,10 +162,10 @@ export default function Project() {
           onClick={() => navigate('/automation')}
           className="text-primary hover:text-primary/80 mb-4"
         >
-          ← Voltar
+          ← {t('pages.project.back')}
         </button>
         <h1 className="text-4xl font-semibold text-text-primary">
-          {isEditMode ? 'Edit Project' : 'Create Project'}
+          {isEditMode ? t('pages.project.titleEdit') : t('pages.project.titleCreate')}
         </h1>
       </div>
 
@@ -171,70 +173,70 @@ export default function Project() {
         <div className="grid grid-cols-1 gap-6">
           <div>
             <FormInput
-              label="Name"
+              label={t('pages.project.name')}
               required
               placeholder="DOWLOANDS_NFE"
               error={errors.name?.message}
               {...register('name', {
-                required: 'Name is required',
-                minLength: { value: 5, message: 'Name must be at least 5 characters' },
+                required: t('pages.project.nameRequired'),
+                minLength: { value: 5, message: t('pages.project.nameMinLength') },
               })}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <FormSelect label="Active" {...register('active')}>
-                <option value="true">True</option>
-                <option value="false">False</option>
+              <FormSelect label={t('pages.project.active')} {...register('active')}>
+                <option value="true">{t('common.true')}</option>
+                <option value="false">{t('common.false')}</option>
               </FormSelect>
             </div>
             <div>
-              <FormSelect label="Auto Update Version" {...register('autoUpdate')}>
-                <option value="true">True</option>
-                <option value="false">False</option>
+              <FormSelect label={t('pages.project.autoUpdateVersion')} {...register('autoUpdate')}>
+                <option value="true">{t('common.true')}</option>
+                <option value="false">{t('common.false')}</option>
               </FormSelect>
             </div>
           </div>
 
           <div>
             <FormInput
-              label="Status"
+              label={t('pages.project.status')}
               required
               placeholder="DOWLOANDS_NFE"
               error={errors.status?.message}
               {...register('status', {
-                required: 'Status is required',
-                minLength: { value: 5, message: 'Status must be at least 5 characters' },
+                required: t('pages.project.statusRequired'),
+                minLength: { value: 5, message: t('pages.project.statusMinLength') },
               })}
             />
           </div>
 
           <div>
             <FormTextarea
-              label="Description"
+              label={t('pages.project.description')}
               required
               rows={4}
               placeholder="Projeto destinado a acessar o site da fazenda, e fazer downloads das nfes"
               error={errors.description?.message}
               {...register('description', {
-                required: 'Description is required',
-                minLength: { value: 5, message: 'Description must be at least 5 characters' },
+                required: t('pages.project.descriptionRequired'),
+                minLength: { value: 5, message: t('pages.project.descriptionMinLength') },
               })}
             />
           </div>
 
           <div>
             <FormSelect
-              label="Package Name"
+              label={t('pages.project.packageName')}
               required
               error={errors.package?.message}
               {...register('package', {
-                required: 'Package is required',
-                min: { value: 1, message: 'Package is required' },
+                required: t('pages.project.packageRequired'),
+                min: { value: 1, message: t('pages.project.packageRequired') },
               })}
             >
-              <option value={0}>Filter the package...</option>
+              <option value={0}>{t('pages.project.filterPackage')}</option>
               {packageList.map((pkg) => (
                 <option key={pkg.id} value={pkg.id}>
                   {pkg.name}
@@ -245,17 +247,17 @@ export default function Project() {
 
           <div>
             <FormSelect
-              label="Version Package"
+              label={t('pages.project.versionPackage')}
               required
               error={errors.packageVersionId?.message}
               disabled={!isPackageSelected || isEditMode}
               className="disabled:bg-background disabled:cursor-not-allowed"
               {...register('packageVersionId', {
-                required: 'Version package is required',
-                min: { value: 1, message: 'Version package is required' },
+                required: t('pages.project.versionRequired'),
+                min: { value: 1, message: t('pages.project.versionRequired') },
               })}
             >
-              <option value={0}>Filter the version…</option>
+              <option value={0}>{t('pages.project.filterVersion')}</option>
               {packageVersions.map((pkgVersion) => (
                 <option key={pkgVersion.id} value={pkgVersion.id}>
                   {pkgVersion.version}
@@ -267,9 +269,9 @@ export default function Project() {
 
         <div className="mt-8 flex justify-end gap-3">
           <FormButton variant="secondary" type="button" onClick={() => navigate('/automation')}>
-            Cancel
+            {t('common.buttons.cancel')}
           </FormButton>
-          <FormButton type="submit">{isEditMode ? 'Edit' : 'Create'}</FormButton>
+          <FormButton type="submit">{isEditMode ? t('common.buttons.edit') : t('common.buttons.create')}</FormButton>
         </div>
       </form>
     </div>

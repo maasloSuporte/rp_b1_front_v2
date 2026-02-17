@@ -28,4 +28,13 @@ export const jobService = {
   executeJob: async (id: number): Promise<void> => {
     await api.post(`/jobs/${id}/execute`);
   },
+
+  deleteJob: async (id: number): Promise<void> => {
+    await api.delete(`/jobs/${id}`);
+  },
+
+  deleteAllJobs: async (): Promise<{ deletedCount: number }> => {
+    const response = await api.delete<{ deletedCount: number }>('/jobs/all');
+    return response.data;
+  },
 };

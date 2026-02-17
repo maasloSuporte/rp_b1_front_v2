@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { assetsService } from '../../service/assets.service';
 import { useNotificationStore } from '../../service/notification.service';
@@ -19,6 +20,7 @@ interface AssetFormData {
 }
 
 export default function Asset() {
+  const { t } = useTranslation('translation');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEditMode = !!id;
@@ -113,10 +115,10 @@ export default function Asset() {
           onClick={() => navigate('/assets')}
           className="text-primary hover:text-primary/80 mb-4"
         >
-          ← Voltar
+          ← {t('pages.asset.back')}
         </button>
         <h1 className="text-4xl font-semibold text-text-primary">
-          {isEditMode ? 'Edit Asset' : 'Create Asset'}
+          {isEditMode ? t('pages.asset.titleEdit') : t('pages.asset.titleCreate')}
         </h1>
       </div>
 
@@ -124,13 +126,13 @@ export default function Asset() {
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Name <span className="text-red-500">*</span>
+              {t('pages.asset.name')} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               {...register('name', {
-                required: 'Name is required',
-                minLength: { value: 5, message: 'Name must be at least 5 characters' },
+                required: t('pages.asset.nameRequired'),
+                minLength: { value: 5, message: t('pages.asset.nameMinLength') },
               })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
@@ -139,29 +141,29 @@ export default function Asset() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Type <span className="text-red-500">*</span>
+              {t('pages.asset.type')} <span className="text-red-500">*</span>
             </label>
             <select
-              {...register('type', { required: 'Type is required' })}
+              {...register('type', { required: t('pages.asset.typeRequired') })}
               onChange={handleTypeChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             >
-              <option value="Text">Text</option>
-              <option value="Integer">Integer</option>
-              <option value="Bool">Bool</option>
-              <option value="Credential">Credential</option>
+              <option value="Text">{t('pages.asset.typeText')}</option>
+              <option value="Integer">{t('pages.asset.typeInteger')}</option>
+              <option value="Bool">{t('pages.asset.typeBool')}</option>
+              <option value="Credential">{t('pages.asset.typeCredential')}</option>
             </select>
             {errors.type && <p className="mt-1 text-sm text-red-600">{errors.type.message}</p>}
           </div>
 
           <div className="sm:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description <span className="text-red-500">*</span>
+              {t('pages.asset.description')} <span className="text-red-500">*</span>
             </label>
             <textarea
               {...register('description', {
-                required: 'Description is required',
-                minLength: { value: 5, message: 'Description must be at least 5 characters' },
+                required: t('pages.asset.descriptionRequired'),
+                minLength: { value: 5, message: t('pages.asset.descriptionMinLength') },
               })}
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
@@ -174,11 +176,11 @@ export default function Asset() {
           {typeValue === 'Text' && (
             <div className="sm:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Value <span className="text-red-500">*</span>
+                {t('pages.asset.value')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                {...register('value', { required: 'Value is required' })}
+                {...register('value', { required: t('pages.asset.valueRequired') })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
               {errors.value && <p className="mt-1 text-sm text-red-600">{errors.value.message}</p>}
@@ -188,11 +190,11 @@ export default function Asset() {
           {typeValue === 'Integer' && (
             <div className="sm:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Value <span className="text-red-500">*</span>
+                {t('pages.asset.value')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
-                {...register('value', { required: 'Value is required' })}
+                {...register('value', { required: t('pages.asset.valueRequired') })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
               {errors.value && <p className="mt-1 text-sm text-red-600">{errors.value.message}</p>}
@@ -202,14 +204,14 @@ export default function Asset() {
           {typeValue === 'Bool' && (
             <div className="sm:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Value <span className="text-red-500">*</span>
+                {t('pages.asset.value')} <span className="text-red-500">*</span>
               </label>
               <select
-                {...register('value', { required: 'Value is required' })}
+                {...register('value', { required: t('pages.asset.valueRequired') })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="true">True</option>
-                <option value="false">False</option>
+                <option value="true">{t('common.true')}</option>
+                <option value="false">{t('common.false')}</option>
               </select>
               {errors.value && <p className="mt-1 text-sm text-red-600">{errors.value.message}</p>}
             </div>
@@ -219,11 +221,11 @@ export default function Asset() {
             <>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Value <span className="text-red-500">*</span>
+                  {t('pages.asset.value')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="password"
-                  {...register('value', { required: 'Value is required' })}
+                  {...register('value', { required: t('pages.asset.valueRequired') })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 />
                 {errors.value && (
@@ -232,12 +234,12 @@ export default function Asset() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  User Name <span className="text-red-500">*</span>
+                  {t('pages.asset.userName')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   {...register('userName', {
-                    required: typeValue === 'Credential' ? 'User Name is required' : false,
+                    required: typeValue === 'Credential' ? t('pages.asset.userNameRequired') : false,
                   })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 />
@@ -255,13 +257,13 @@ export default function Asset() {
             onClick={() => navigate('/assets')}
             className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
           >
-            Cancel
+            {t('common.buttons.cancel')}
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 rounded-md hover:bg-primary/90"
+            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
           >
-            {isEditMode ? 'Update' : 'Create'}
+            {isEditMode ? t('common.buttons.save') : t('common.buttons.create')}
           </button>
         </div>
       </form>

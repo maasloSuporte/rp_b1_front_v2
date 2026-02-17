@@ -1,15 +1,17 @@
 import { useState, lazy, Suspense } from 'react';
+import { useTranslation } from 'react-i18next';
 import Loading from '../../components/Loading';
 
 const Realtime = lazy(() => import('../../components/queues/Realtime'));
 const Historical = lazy(() => import('../../components/queues/Historical'));
 
 export default function Queues() {
+  const { t } = useTranslation('translation');
   const [activeTab, setActiveTab] = useState<'realtime' | 'historical'>('realtime');
 
   return (
     <div className="min-h-screen bg-background">
-      <h1 className="text-4xl font-semibold text-text-primary mb-6">Queues</h1>
+      <h1 className="text-4xl font-semibold text-text-primary mb-6">{t('pages.queues.title')}</h1>
       
       <div className="mb-6 flex gap-2">
         <button
@@ -20,7 +22,7 @@ export default function Queues() {
               : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
         >
-          Real time
+          {t('pages.queues.realtime')}
         </button>
         <button
           onClick={() => setActiveTab('historical')}
@@ -30,7 +32,7 @@ export default function Queues() {
               : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
         >
-          Historical
+          {t('pages.queues.historical')}
         </button>
       </div>
 

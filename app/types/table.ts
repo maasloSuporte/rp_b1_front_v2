@@ -4,7 +4,7 @@ export interface TableColumn {
   /** Nome do parâmetro na API quando filtrar (ex: API espera "ProjectName", use filterKey: "ProjectName") */
   filterKey?: string;
   label: string;
-  type?: 'text' | 'action';
+  type?: 'text' | 'action' | 'checkbox';
   filterable?: boolean;
   filterType?: 'text' | 'select';
   filterOptions?: { id: string | number; label: string }[];

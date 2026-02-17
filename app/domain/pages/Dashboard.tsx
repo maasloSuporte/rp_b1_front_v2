@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import type { ApexOptions } from 'apexcharts';
 import { dashboardService } from '../../service/dashboard.service';
 
-// Importar ícones - usando SVGs ou lucide-react
 interface StatCard {
   id: number;
-  title: string;
+  titleKey: keyof import('@/translate/translations').TranslationsType['pages']['dashboard'];
   value: string;
   icon: string;
   color: string;
@@ -14,72 +14,31 @@ interface StatCard {
 }
 
 interface JobStatus {
-  label: string;
+  labelKey: keyof import('@/translate/translations').TranslationsType['common']['states'];
   value: number;
 }
 
 export default function Dashboard() {
+  const { t } = useTranslation('translation');
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [ChartComponent, setChartComponent] = useState<any>(null);
   const [stats, setStats] = useState<StatCard[]>([
-    {
-      id: 1,
-      title: 'Users',
-      value: '0',
-      icon: '/assets/images/svgs/icon-user-male.svg',
-      color: 'primary',
-      route: '/users',
-    },
-    {
-      id: 2,
-      title: 'Processes',
-      value: '0',
-      icon: '/assets/images/svgs/icon-briefcase.svg',
-      color: 'warning',
-      route: '/jobs',
-    },
-    {
-      id: 3,
-      title: 'Triggers',
-      value: '0',
-      icon: '/assets/images/svgs/icon-mailbox.svg',
-      color: 'accent',
-      route: '/scheduled',
-    },
-    {
-      id: 4,
-      title: 'Assets',
-      value: '0',
-      icon: '/assets/images/svgs/icon-favorites.svg',
-      color: 'error',
-      route: '/assets',
-    },
-    {
-      id: 5,
-      title: 'Queues',
-      value: '0',
-      icon: '/assets/images/svgs/icon-speech-bubble.svg',
-      color: 'success',
-      route: '/queues',
-    },
-    {
-      id: 6,
-      title: 'Machines',
-      value: '0',
-      icon: '/assets/images/svgs/icon-connect.svg',
-      color: 'accent',
-      route: '/machines',
-    },
+    { id: 1, titleKey: 'users', value: '0', icon: '/assets/images/svgs/icon-user-male.svg', color: 'primary', route: '/users' },
+    { id: 2, titleKey: 'processes', value: '0', icon: '/assets/images/svgs/icon-briefcase.svg', color: 'warning', route: '/jobs' },
+    { id: 3, titleKey: 'triggers', value: '0', icon: '/assets/images/svgs/icon-mailbox.svg', color: 'accent', route: '/scheduled' },
+    { id: 4, titleKey: 'assets', value: '0', icon: '/assets/images/svgs/icon-favorites.svg', color: 'error', route: '/assets' },
+    { id: 5, titleKey: 'queues', value: '0', icon: '/assets/images/svgs/icon-speech-bubble.svg', color: 'success', route: '/queues' },
+    { id: 6, titleKey: 'machines', value: '0', icon: '/assets/images/svgs/icon-connect.svg', color: 'accent', route: '/machines' },
   ]);
 
   const [jobStatuses, setJobStatuses] = useState<JobStatus[]>([
-    { label: 'Running', value: 0 },
-    { label: 'Stopping', value: 0 },
-    { label: 'Suspended', value: 0 },
-    { label: 'Pending', value: 0 },
-    { label: 'Terminating', value: 0 },
-    { label: 'Resumed', value: 0 },
+    { labelKey: 'running', value: 0 },
+    { labelKey: 'stopping', value: 0 },
+    { labelKey: 'suspended', value: 0 },
+    { labelKey: 'pending', value: 0 },
+    { labelKey: 'terminating', value: 0 },
+    { labelKey: 'resumed', value: 0 },
   ]);
 
   const [donutChartSeries, setDonutChartSeries] = useState<number[]>([0, 0, 0]);
@@ -227,64 +186,21 @@ export default function Dashboard() {
 
       // Atualizar estatísticas dos cards
       setStats([
-        {
-          id: 1,
-          title: 'Users',
-          value: formatNumber(dashboardData.stats.users),
-          icon: '/assets/images/svgs/icon-user-male.svg',
-          color: 'primary',
-          route: '/users',
-        },
-        {
-          id: 2,
-          title: 'Processes',
-          value: formatNumber(dashboardData.stats.processes),
-          icon: '/assets/images/svgs/icon-briefcase.svg',
-          color: 'warning',
-          route: '/jobs',
-        },
-        {
-          id: 3,
-          title: 'Triggers',
-          value: formatNumber(dashboardData.stats.triggers),
-          icon: '/assets/images/svgs/icon-mailbox.svg',
-          color: 'accent',
-          route: '/scheduled',
-        },
-        {
-          id: 4,
-          title: 'Assets',
-          value: formatNumber(dashboardData.stats.assets),
-          icon: '/assets/images/svgs/icon-favorites.svg',
-          color: 'error',
-          route: '/assets',
-        },
-        {
-          id: 5,
-          title: 'Queues',
-          value: formatNumber(dashboardData.stats.queues),
-          icon: '/assets/images/svgs/icon-speech-bubble.svg',
-          color: 'success',
-          route: '/queues',
-        },
-        {
-          id: 6,
-          title: 'Machines',
-          value: formatNumber(dashboardData.stats.machines),
-          icon: '/assets/images/svgs/icon-connect.svg',
-          color: 'accent',
-          route: '/machines',
-        },
+        { id: 1, titleKey: 'users', value: formatNumber(dashboardData.stats.users), icon: '/assets/images/svgs/icon-user-male.svg', color: 'primary', route: '/users' },
+        { id: 2, titleKey: 'processes', value: formatNumber(dashboardData.stats.processes), icon: '/assets/images/svgs/icon-briefcase.svg', color: 'warning', route: '/jobs' },
+        { id: 3, titleKey: 'triggers', value: formatNumber(dashboardData.stats.triggers), icon: '/assets/images/svgs/icon-mailbox.svg', color: 'accent', route: '/scheduled' },
+        { id: 4, titleKey: 'assets', value: formatNumber(dashboardData.stats.assets), icon: '/assets/images/svgs/icon-favorites.svg', color: 'error', route: '/assets' },
+        { id: 5, titleKey: 'queues', value: formatNumber(dashboardData.stats.queues), icon: '/assets/images/svgs/icon-speech-bubble.svg', color: 'success', route: '/queues' },
+        { id: 6, titleKey: 'machines', value: formatNumber(dashboardData.stats.machines), icon: '/assets/images/svgs/icon-connect.svg', color: 'accent', route: '/machines' },
       ]);
 
-      // Atualizar status de jobs
       setJobStatuses([
-        { label: 'Running', value: dashboardData.jobStatuses.running },
-        { label: 'Stopping', value: dashboardData.jobStatuses.stopping },
-        { label: 'Suspended', value: dashboardData.jobStatuses.suspended },
-        { label: 'Pending', value: dashboardData.jobStatuses.pending },
-        { label: 'Terminating', value: dashboardData.jobStatuses.terminating },
-        { label: 'Resumed', value: dashboardData.jobStatuses.resumed },
+        { labelKey: 'running', value: dashboardData.jobStatuses.running },
+        { labelKey: 'stopping', value: dashboardData.jobStatuses.stopping },
+        { labelKey: 'suspended', value: dashboardData.jobStatuses.suspended },
+        { labelKey: 'pending', value: dashboardData.jobStatuses.pending },
+        { labelKey: 'terminating', value: dashboardData.jobStatuses.terminating },
+        { labelKey: 'resumed', value: dashboardData.jobStatuses.resumed },
       ]);
 
       // Atualizar gráfico de rosca (Jobs History)
@@ -315,7 +231,7 @@ export default function Dashboard() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando dados do dashboard...</p>
+          <p className="text-gray-600">{t('pages.dashboard.loadingData')}</p>
         </div>
       </div>
     );
@@ -343,18 +259,17 @@ export default function Dashboard() {
                 <div className="flex flex-col items-center text-center">
                   <img
                     src={stat.icon}
-                    alt={stat.title}
+                    alt={t(`pages.dashboard.${stat.titleKey}`)}
                     width="40"
                     height="40"
                     className="mb-2 rounded-full"
                     style={{ objectFit: 'contain' }}
                     onError={(e) => {
-                      console.error('Failed to load icon:', stat.icon);
                       (e.target as HTMLImageElement).style.display = 'none';
                     }}
                   />
                   <h4 className={`text-sm font-semibold mb-2 mt-2 ${colorClass.text}`} style={{ fontSize: '14px', fontWeight: 600 }}>
-                    {stat.title}
+                    {t(`pages.dashboard.${stat.titleKey}`)}
                   </h4>
                   <h6 className={`text-xl font-semibold ${colorClass.text}`} style={{ fontSize: '21px', fontWeight: 600, marginTop: '4px' }}>
                     {stat.value}
@@ -372,7 +287,7 @@ export default function Dashboard() {
           {/* Job Status */}
           <div className="bg-white rounded-lg shadow-card p-6 min-w-0">
             <div className="flex items-center justify-center mb-6">
-              <h2 className="text-3xl font-semibold text-gray-900">Job Status</h2>
+              <h2 className="text-3xl font-semibold text-gray-900">{t('pages.dashboard.jobStatus')}</h2>
               <img
                 src="/assets/images/svgs/dashboard-dwa/Ellipse 59.svg"
                 alt=""
@@ -390,7 +305,7 @@ export default function Dashboard() {
                   style={{ minHeight: '230px' }}
                 >
                   <p className="text-gray-500 text-base font-normal" style={{ fontSize: '16.85px', lineHeight: '140%' }}>
-                    {status.label}
+                    {t(`common.states.${status.labelKey}`)}
                   </p>
                   <span className="text-gray-900 font-semibold" style={{ fontSize: '15.82px', lineHeight: '120%', marginBottom: '30px' }}>
                     {status.value}
@@ -402,7 +317,7 @@ export default function Dashboard() {
 
           {/* Jobs History */}
           <div className="bg-white rounded-lg shadow-card p-6 min-w-0">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6 text-center">Jobs History</h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6 text-center">{t('pages.dashboard.jobsHistory')}</h2>
             <div className="flex flex-col items-center">
               {/* Legend */}
               <div className="flex flex-col gap-3 mb-6">
@@ -415,7 +330,7 @@ export default function Dashboard() {
                       (e.target as HTMLImageElement).style.display = 'none';
                     }}
                   />
-                  <span className="text-gray-700">Successful ({donutChartSeries[0]})</span>
+                  <span className="text-gray-700">{t('pages.dashboard.successful')} ({donutChartSeries[0]})</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <img
@@ -426,7 +341,7 @@ export default function Dashboard() {
                       (e.target as HTMLImageElement).style.display = 'none';
                     }}
                   />
-                  <span className="text-gray-700">Faulted ({donutChartSeries[1]})</span>
+                  <span className="text-gray-700">{t('pages.dashboard.faulted')} ({donutChartSeries[1]})</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <img
@@ -437,7 +352,7 @@ export default function Dashboard() {
                       (e.target as HTMLImageElement).style.display = 'none';
                     }}
                   />
-                  <span className="text-gray-700">Stopped ({donutChartSeries[2]})</span>
+                  <span className="text-gray-700">{t('pages.dashboard.stopped')} ({donutChartSeries[2]})</span>
                 </div>
               </div>
               {/* Donut Chart */}
@@ -451,7 +366,7 @@ export default function Dashboard() {
                   />
                 ) : (
                   <div className="h-[280px] flex items-center justify-center text-gray-500">
-                    Carregando gráfico...
+                    {t('pages.dashboard.loadingChart')}
                   </div>
                 )}
               </div>
@@ -464,8 +379,8 @@ export default function Dashboard() {
       <section className="min-w-0">
         <div className="bg-white rounded-lg shadow-card p-6 min-w-0">
           <div className="mb-4">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-1">Revenue updates</h2>
-            <p className="text-gray-600 text-sm">Overview of Profit</p>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-1">{t('pages.dashboard.revenueUpdates')}</h2>
+            <p className="text-gray-600 text-sm">{t('pages.dashboard.overviewProfit')}</p>
             <div className="flex items-center gap-4 mt-4">
               <div className="flex items-center gap-2">
                 <img
@@ -476,7 +391,7 @@ export default function Dashboard() {
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
                 />
-                <span className="text-gray-700">Modernize</span>
+                <span className="text-gray-700">{t('pages.dashboard.modernize')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <img
@@ -487,7 +402,7 @@ export default function Dashboard() {
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
                 />
-                <span className="text-gray-700">Spike Admin</span>
+                <span className="text-gray-700">{t('pages.dashboard.spikeAdmin')}</span>
               </div>
             </div>
           </div>
@@ -501,7 +416,7 @@ export default function Dashboard() {
               />
             ) : (
               <div className="h-[300px] flex items-center justify-center text-gray-500">
-                Carregando gráfico...
+                {t('pages.dashboard.loadingChart')}
               </div>
             )}
           </div>
