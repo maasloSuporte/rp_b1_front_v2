@@ -40,6 +40,40 @@ interface ScheduleFormData {
 
 const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
+/** Mapeia nome (API) ou id da frequência para chave de tradução */
+const FREQUENCY_KEYS: Record<string, string> = {
+  'Every Minute': 'everyMinute',
+  'Hourly': 'hourly',
+  'Daily': 'daily',
+  'Weekly': 'weekly',
+  'Monthly by Day': 'monthlyByDay',
+  'Monthly by Week': 'monthlyByWeek',
+  'Custom Cron': 'customCron',
+};
+const FREQUENCY_ID_TO_KEY: Record<number, string> = {
+  1: 'everyMinute',
+  2: 'hourly',
+  3: 'daily',
+  4: 'weekly',
+  5: 'monthlyByDay',
+  6: 'monthlyByWeek',
+  7: 'customCron',
+};
+
+/** Mapeia nome (API) ou id da prioridade para chave de tradução */
+const PRIORITY_KEYS: Record<string, string> = {
+  'Low': 'low',
+  'Medium': 'medium',
+  'High': 'high',
+  'Critical': 'critical',
+};
+const PRIORITY_ID_TO_KEY: Record<number, string> = {
+  1: 'low',
+  2: 'medium',
+  3: 'high',
+  4: 'critical',
+};
+
 const fieldInputClass =
   'w-full min-h-[2.75rem] px-4 py-3 text-base text-text-primary bg-white border-2 border-border-form rounded-xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-200';
 const fieldSelectClass =
@@ -669,13 +703,13 @@ export default function Schedule() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="md:col-span-2">
             <FormInput
-              label="Name"
+              label={t('pages.schedule.name')}
               required
               placeholder="DOWLOANDS_NFE"
               error={errors.name?.message}
               {...register('name', {
-                required: 'Name is required',
-                minLength: { value: 5, message: 'Name must be at least 5 characters' },
+                required: t('pages.schedule.nameRequired'),
+                minLength: { value: 5, message: t('pages.schedule.nameMinLength') },
               })}
             />
           </div>
@@ -684,10 +718,10 @@ export default function Schedule() {
             <Controller
               name="projectId"
               control={control}
-              rules={{ required: 'Project is required', min: { value: 1, message: 'Project is required' } }}
+              rules={{ required: t('pages.schedule.projectRequired'), min: { value: 1, message: t('pages.schedule.projectRequired') } }}
               render={({ field }) => (
                 <FormSelect
-                  label="Project"
+                  label={t('pages.schedule.project')}
                   required
                   error={errors.projectId?.message}
                   name={field.name}
@@ -701,7 +735,7 @@ export default function Schedule() {
                   onBlur={field.onBlur}
                   ref={field.ref}
                 >
-                  <option value={0}>Select option</option>
+                  <option value={0}>{t('pages.schedule.selectOption')}</option>
                   {projects.map((project) => (
                     <option key={project.id} value={project.id}>
                       {project.name}
@@ -716,10 +750,10 @@ export default function Schedule() {
             <Controller
               name="priority"
               control={control}
-              rules={{ required: 'Priority is required', min: { value: 1, message: 'Priority is required' } }}
+              rules={{ required: t('pages.schedule.priorityRequired'), min: { value: 1, message: t('pages.schedule.priorityRequired') } }}
               render={({ field }) => (
                 <FormSelect
-                  label="Priority"
+                  label={t('pages.schedule.priority')}
                   required
                   error={errors.priority?.message}
                   name={field.name}
@@ -733,12 +767,16 @@ export default function Schedule() {
                   onBlur={field.onBlur}
                   ref={field.ref}
                 >
-                  <option value={0}>Select option</option>
-                  {priorities.map((priority) => (
-                    <option key={priority.id} value={priority.id}>
-                      {priority.name}
-                    </option>
-                  ))}
+                  <option value={0}>{t('pages.schedule.selectOption')}</option>
+                  {priorities.map((priority) => {
+                    const key = PRIORITY_ID_TO_KEY[priority.id] ?? PRIORITY_KEYS[priority.name];
+                    const label = key ? t(`pages.schedule.priorities.${key}`) : priority.name;
+                    return (
+                      <option key={priority.id} value={priority.id}>
+                        {label}
+                      </option>
+                    );
+                  })}
                 </FormSelect>
               )}
             />
@@ -748,10 +786,10 @@ export default function Schedule() {
             <Controller
               name="frequencyId"
               control={control}
-              rules={{ required: 'Frequency is required', min: { value: 1, message: 'Frequency is required' } }}
+              rules={{ required: t('pages.schedule.frequencyRequired'), min: { value: 1, message: t('pages.schedule.frequencyRequired') } }}
               render={({ field }) => (
                 <FormSelect
-                  label="Frequency"
+                  label={t('pages.schedule.frequency')}
                   required
                   error={errors.frequencyId?.message}
                   name={field.name}
@@ -768,12 +806,16 @@ export default function Schedule() {
                   onBlur={field.onBlur}
                   ref={field.ref}
                 >
-                  <option value={0}>Select option</option>
-                  {frequencies.map((frequency) => (
-                    <option key={frequency.id} value={frequency.id}>
-                      {frequency.name}
-                    </option>
-                  ))}
+                  <option value={0}>{t('pages.schedule.selectOption')}</option>
+                  {frequencies.map((frequency) => {
+                    const key = FREQUENCY_ID_TO_KEY[frequency.id] ?? FREQUENCY_KEYS[frequency.name];
+                    const label = key ? t(`pages.schedule.frequencies.${key}`) : frequency.name;
+                    return (
+                      <option key={frequency.id} value={frequency.id}>
+                        {label}
+                      </option>
+                    );
+                  })}
                 </FormSelect>
               )}
             />
@@ -783,10 +825,10 @@ export default function Schedule() {
             <Controller
               name="machineId"
               control={control}
-              rules={{ required: 'Machine is required', min: { value: 1, message: 'Machine is required' } }}
+              rules={{ required: t('pages.schedule.machineRequired'), min: { value: 1, message: t('pages.schedule.machineRequired') } }}
               render={({ field }) => (
                 <FormSelect
-                  label="Machine"
+                  label={t('pages.schedule.machine')}
                   required
                   error={errors.machineId?.message}
                   name={field.name}
@@ -800,7 +842,7 @@ export default function Schedule() {
                   onBlur={field.onBlur}
                   ref={field.ref}
                 >
-                  <option value={0}>Select option</option>
+                  <option value={0}>{t('pages.schedule.selectOption')}</option>
                   {machines.map((machine) => (
                     <option key={machine.id} value={machine.id}>
                       {machine.machineName}
@@ -813,21 +855,21 @@ export default function Schedule() {
 
           <div className="md:col-span-2">
             <FormTextarea
-              label="Details"
+              label={t('pages.schedule.details')}
               required
               rows={4}
               placeholder={t('pages.schedule.detailsPlaceholder')}
               error={errors.details?.message}
               {...register('details', {
-                required: 'Details is required',
-                minLength: { value: 5, message: 'Details must be at least 5 characters' },
+                required: t('pages.schedule.detailsRequired'),
+                minLength: { value: 5, message: t('pages.schedule.detailsMinLength') },
               })}
             />
           </div>
 
           {Number(frequencyId) > 0 && (
             <div className="md:col-span-2 border-t border-border-form pt-6">
-              <h3 className="text-lg font-semibold text-text-primary mb-4">Cron Scheduling</h3>
+              <h3 className="text-lg font-semibold text-text-primary mb-4">{t('pages.schedule.cronScheduling')}</h3>
               {renderCronFields()}
             </div>
           )}

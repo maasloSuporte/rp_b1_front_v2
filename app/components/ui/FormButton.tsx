@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes } from 'react';
 
 const base =
-  'inline-flex items-center justify-center font-semibold text-base rounded-xl transition-all duration-200 min-h-[3.5rem] px-8 py-4 disabled:opacity-50 disabled:cursor-not-allowed';
+  'inline-flex items-center justify-center font-semibold text-base rounded-xl transition-all duration-200 min-h-[3.5rem] px-8 py-4 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
 
 const variants = {
   primary:

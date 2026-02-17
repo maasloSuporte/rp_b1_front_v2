@@ -1,4 +1,5 @@
 // import api from './api';
+import { companyUserService } from './companyUser.service';
 import { usersService } from './users.service';
 import { jobService } from './job.service';
 import { scheduleService } from './schedule.service';
@@ -56,25 +57,32 @@ const JOB_STATE = {
 export const dashboardService = {
   getDashboardData: async (): Promise<DashboardData> => {
     try {
-      debugger
-      // Buscar todos os dados em paralelo
-      const [users, jobs, schedules, assets, queues, machines] = await Promise.all([
-        usersService.getAllUsers(),
-        jobService.getAllJobs('PageNumber=1&PageSize=100'), // Buscar todos os jobs
-        scheduleService.getAllSchedule('PageNumber=1&PageSize=100'), // Buscar todos os schedules
-        assetsService.getAllAssets('PageNumber=1&PageSize=100'), // Buscar todos os assets
-        queuesService.getAllQueues({ pageNumber: 1, pageSize: 100 }), // Buscar todas as queues
-        devicesService.getAllDevices('PageNumber=1&PageSize=100'), // Buscar todas as machines
+      // Buscar usuários: preferir companyUsers (mesma fonte da listagem); fallback para /users
+      let activeUsersCount = 0;
+      try {
+        const companyUsersResponse = await companyUserService.getAllUsers('PageNumber=1&PageSize=100');
+        const items = companyUsersResponse?.items ?? [];
+        activeUsersCount = items.filter((u: { userActive?: boolean }) => u.userActive === true).length;
+      } catch {
+        const users = await usersService.getAllUsers();
+        activeUsersCount = users.filter((u) => u.enabled === true).length;
+      }
+
+      const [jobs, schedules, assets, queues, machines] = await Promise.all([
+        jobService.getAllJobs('PageNumber=1&PageSize=100'),
+        scheduleService.getAllSchedule('PageNumber=1&PageSize=100'),
+        assetsService.getAllAssets('PageNumber=1&PageSize=100'),
+        queuesService.getAllQueues({ pageNumber: 1, pageSize: 100 }),
+        devicesService.getAllDevices('PageNumber=1&PageSize=100'),
       ]);
 
-      // Contar estatísticas básicas
       const stats: DashboardStats = {
-        users: users.length,
-        processes: jobs.totalItems || jobs.items?.length || 0,
-        triggers: schedules.totalItems || schedules.items?.length || 0,
-        assets: assets.totalItems || assets.items?.length || 0,
-        queues: queues.totalItems || queues.items?.length || 0,
-        machines: machines.totalItems || machines.items?.length || 0,
+        users: activeUsersCount,
+        processes: jobs.totalItems ?? jobs.items?.length ?? 0,
+        triggers: schedules.totalItems ?? schedules.items?.length ?? 0,
+        assets: assets.totalItems ?? assets.items?.length ?? 0,
+        queues: queues.totalItems ?? queues.items?.length ?? 0,
+        machines: machines.totalItems ?? machines.items?.length ?? 0,
       };
 
       // Contar status de jobs

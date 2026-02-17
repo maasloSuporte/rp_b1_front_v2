@@ -92,7 +92,7 @@ export default function Sidebar({
           target="_blank"
           rel="noopener noreferrer"
           style={{ cursor: 'pointer' }}
-          className={`flex items-center rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors ${isCollapsed ? 'justify-center py-3 px-2.5' : 'gap-3 px-5 py-3'}`}
+          className={`cursor-pointer flex items-center rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors ${isCollapsed ? 'justify-center py-3 px-2.5' : 'gap-3 px-5 py-3'}`}
         >
           {item.iconName && (() => {
             const IconComponent = getIcon(item.iconName);
@@ -119,9 +119,9 @@ export default function Sidebar({
             type="button"
             onClick={() => toggleExpand(item)}
             style={{ cursor: item.disabled ? 'not-allowed' : 'pointer' }}
-            className={`w-full flex items-center rounded-lg justify-center py-3 px-2.5 transition-colors ${
+            className={`cursor-pointer w-full flex items-center rounded-lg justify-center py-3 px-2.5 transition-colors ${
               active ? 'bg-white/10 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'
-            } ${item.disabled ? 'opacity-50' : ''}`}
+            } ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {item.iconName && (() => {
               const IconComponent = getIcon(item.iconName);
@@ -139,12 +139,12 @@ export default function Sidebar({
           <Link
             to={normalizeRoute(item.route) || '#'}
             onClick={() => onClose()}
-            style={{ ...indent, cursor: item.disabled ? 'default' : 'pointer' }}
+            style={indent}
             className={`flex items-center rounded-lg transition-colors ${basePadding} ${
               active
                 ? 'bg-orange text-white shadow-sm'
                 : 'text-white/90 hover:bg-white/10 hover:text-white'
-            } ${item.disabled ? 'opacity-50 pointer-events-none' : ''}`}
+            } ${item.disabled ? 'opacity-50 pointer-events-none cursor-not-allowed' : 'cursor-pointer'}`}
           >
             {item.iconName && (() => {
               const IconComponent = getIcon(item.iconName);
@@ -160,10 +160,10 @@ export default function Sidebar({
             <button
               type="button"
               onClick={() => toggleExpand(item)}
-              style={{ ...indent, cursor: item.disabled ? 'not-allowed' : 'pointer' }}
-              className={`w-full flex items-center rounded-lg text-left transition-colors ${basePadding} ${
+              style={indent}
+              className={`cursor-pointer w-full flex items-center rounded-lg text-left transition-colors ${basePadding} ${
                 active ? 'bg-white/10 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'
-              } ${item.disabled ? 'opacity-50' : ''}`}
+              } ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {item.iconName && (() => {
                 const IconComponent = getIcon(item.iconName);
@@ -201,8 +201,7 @@ export default function Sidebar({
       <div className={`flex items-center justify-between shrink-0 h-[70px] bg-white border-b border-gray-100 ${isCollapsed ? 'px-2' : 'px-5'}`}>
         <Link
           to="/dashboard"
-          style={{ cursor: 'pointer' }}
-          className={`flex items-center min-w-0 h-full ${isCollapsed ? 'flex-1 justify-center' : 'gap-3'}`}
+          className={`cursor-pointer flex items-center min-w-0 h-full ${isCollapsed ? 'flex-1 justify-center' : 'gap-3'}`}
         >
           <div className="flex items-center justify-center shrink-0 h-full w-full max-h-[70px]">
             <img
@@ -216,8 +215,7 @@ export default function Sidebar({
           <button
             type="button"
             onClick={onClose}
-            style={{ cursor: 'pointer' }}
-            className="p-2 -m-2 rounded-lg text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors lg:hidden"
+            className="cursor-pointer p-2 -m-2 rounded-lg text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors lg:hidden"
             aria-label={t('nav.closeMenu')}
           >
             <XMarkIcon className="w-5 h-5" />
@@ -237,7 +235,7 @@ export default function Sidebar({
         <button
           type="button"
           onClick={() => setAdminModalOpen(true)}
-          className={`w-full flex items-center rounded-xl bg-white/10 transition-[padding] duration-300 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white/30 ${
+          className={`cursor-pointer w-full flex items-center rounded-xl bg-white/10 transition-[padding] duration-300 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white/30 ${
             isCollapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-3'
           }`}
         >

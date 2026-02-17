@@ -152,6 +152,14 @@ export type TranslationsType = {
     };
     scheduled: {
       title: string;
+      subtitle: string;
+      createSchedule: string;
+      activityName: string;
+      frequency: string;
+      nextExecution: string;
+      priority: string;
+      details: string;
+      activitiesCount: string;
       deleteSuccess: string;
       deleteError: string;
     };
@@ -271,6 +279,7 @@ export type TranslationsType = {
       newSchedule: string;
       name: string;
       nameRequired: string;
+      nameMinLength: string;
       project: string;
       projectRequired: string;
       priority: string;
@@ -281,6 +290,7 @@ export type TranslationsType = {
       machineRequired: string;
       details: string;
       detailsRequired: string;
+      detailsMinLength: string;
       detailsPlaceholder: string;
       repeatEvery: string;
       repeatEveryRequired: string;
@@ -319,6 +329,21 @@ export type TranslationsType = {
       validationMonthlyWeek: string;
       validationMustBeGreaterThanZero: string;
       validationBetween0And59: string;
+      frequencies: {
+        everyMinute: string;
+        hourly: string;
+        daily: string;
+        weekly: string;
+        monthlyByDay: string;
+        monthlyByWeek: string;
+        customCron: string;
+      };
+      priorities: {
+        low: string;
+        medium: string;
+        high: string;
+        critical: string;
+      };
     };
     execution: {
       title: string;

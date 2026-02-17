@@ -42,6 +42,10 @@ interface DynamicTableProps {
   showFirstLastButtons?: boolean;
   onActionClick?: (event: { action: string; item: any }) => void;
   onQueryParamsChange?: (queryString: string) => void;
+  /** Ordenação inicial: key da coluna (ex: 'name', 'nextExecution') */
+  initialSortField?: string;
+  /** Direção inicial da ordenação */
+  initialSortOrder?: 'asc' | 'desc';
   /** IDs das linhas selecionadas (para coluna type: 'checkbox') */
   selectedRowIds?: number[];
   /** Callback ao marcar/desmarcar checkbox da linha */
@@ -58,6 +62,8 @@ export default function DynamicTable({
   showFirstLastButtons = true,
   onActionClick,
   onQueryParamsChange,
+  initialSortField = 'id',
+  initialSortOrder = 'asc',
   selectedRowIds = [],
   onSelectionChange,
 }: DynamicTableProps) {
@@ -65,8 +71,8 @@ export default function DynamicTable({
   const [columnFilters, setColumnFilters] = useState<{ [key: string]: any }>({});
   const [selectedFilterColumn, setSelectedFilterColumn] = useState<string>('');
   const [currentSort, setCurrentSort] = useState<{ column: string; direction: 'asc' | 'desc' }>({
-    column: 'id',
-    direction: 'asc',
+    column: initialSortField,
+    direction: initialSortOrder,
   });
   const [currentPage, setCurrentPage] = useState({ pageSize, pageNumber: 0 });
   const filterTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -157,11 +163,8 @@ export default function DynamicTable({
     if (!column.sortable) return;
 
     if (currentSort.column === column.key) {
-      if (currentSort.direction === 'asc') {
-        setCurrentSort({ column: '', direction: 'desc' });
-      } else {
-        setCurrentSort({ column: column.key, direction: 'desc' });
-      }
+      const nextDirection = currentSort.direction === 'asc' ? 'desc' : 'asc';
+      setCurrentSort({ column: column.key, direction: nextDirection });
     } else {
       setCurrentSort({ column: column.key, direction: 'asc' });
     }

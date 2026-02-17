@@ -68,21 +68,20 @@
     overflow-x: hidden;
   }
 
-  button,
-  [role="button"],
-  input[type="submit"],
-  input[type="button"],
-  select,
-  a {
-    cursor: pointer;
+  /* inputs de texto: cursor de edição (sobrescreve depois) */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  textarea {
+    cursor: text;
   }
+}
 
-  button:disabled,
-  [role="button"][aria-disabled="true"],
-  input:disabled,
-  select:disabled {
-    cursor: not-allowed;
-  }
+/* label associado a input: clique foca o input */
+label[for] {
+  cursor: pointer;
 }
 
 @layer components {
@@ -110,8 +109,33 @@
   animation: slide-in 0.3s ease-out;
 }
 
-/* Sidebar: garante cursor pointer em todos os elementos clicáveis */
+/* Cursor pointer em todos os elementos clicáveis (força prioridade) */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+input[type="submit"],
+input[type="button"],
+select,
+a,
 .app-sidebar a,
-.app-sidebar button {
-  cursor: pointer;
+.app-sidebar button,
+.app-sidebar [role="button"],
+.cursor-pointer {
+  cursor: pointer !important;
+}
+
+button:disabled,
+[role="button"][aria-disabled="true"],
+input:disabled,
+select:disabled {
+  cursor: not-allowed !important;
+}
+
+/* Inputs de texto mantêm cursor de edição */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+textarea {
+  cursor: text !important;
 }
