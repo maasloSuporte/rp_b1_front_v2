@@ -6,6 +6,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 60000, // 60s para uploads grandes
 });
 
 // Interceptor para adicionar token de autenticação
@@ -14,6 +15,10 @@ api.interceptors.request.use(
     const token = sessionStorage.getItem('Authorization') || localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+    // FormData: deixa o axios/navegador definir Content-Type com boundary (senão 400 no backend)
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
     }
     return config;
   },

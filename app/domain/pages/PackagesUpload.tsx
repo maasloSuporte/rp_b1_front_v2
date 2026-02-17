@@ -30,10 +30,11 @@ export default function PackagesUpload() {
   const showToast = useNotificationStore((state) => state.showToast);
   const [packageList, setPackageList] = useState<IPackageCompanyGetOutputDto[]>([]);
   const [technologies, setTechnologies] = useState<ITechnologyGetOutputDto[]>([]);
+  const [technologiesLoadError, setTechnologiesLoadError] = useState<string | null>(null);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [idSelectedPackage, setIdSelectedPackage] = useState<number | null>(null);
 
-  const state = location.state as { isNew?: boolean } | null;
+  const state = location.state as { isNew?: boolean; packageId?: number } | null;
   const isNewUpload = state?.isNew !== false;
 
   const {
@@ -58,11 +59,39 @@ export default function PackagesUpload() {
   const fileRegister = register('file', { required: t('pages.packagesUpload.fileRequired') });
 
   useEffect(() => {
-    loadTechnology();
-    if (!isNewUpload) {
-      loadPackages();
-    }
+    let cancelled = false;
+    setTechnologiesLoadError(null);
+    const load = async () => {
+      try {
+        const result = await technologyService.getTechnology();
+        if (!cancelled) setTechnologies(Array.isArray(result) ? result : []);
+      } catch (error: unknown) {
+        if (!cancelled) {
+          setTechnologies([]);
+          const err = error as { response?: { status?: number; data?: { message?: string } } };
+          const msg =
+            err?.response?.status === 401
+              ? 'Faça login para carregar as tecnologias.'
+              : err?.response?.data?.message ?? 'Erro ao carregar tecnologias. Verifique a conexão com a API.';
+          setTechnologiesLoadError(msg);
+        }
+        console.error('Erro ao carregar tecnologias:', error);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
   }, [isNewUpload]);
+
+  useEffect(() => {
+    if (!isNewUpload) {
+      loadPackages().then(() => {
+        if (state?.packageId) {
+          setValue('packageId', state.packageId);
+          setIdSelectedPackage(state.packageId);
+        }
+      });
+    }
+  }, [isNewUpload, state?.packageId]);
 
   useEffect(() => {
     if (selectedPackageId > 0 && !isNewUpload) {
@@ -71,11 +100,14 @@ export default function PackagesUpload() {
   }, [selectedPackageId, isNewUpload]);
 
   const loadTechnology = async () => {
+    setTechnologiesLoadError(null);
     try {
       const result = await technologyService.getTechnology();
-      setTechnologies(result);
+      setTechnologies(Array.isArray(result) ? result : []);
     } catch (error) {
       console.error('Erro ao carregar tecnologias:', error);
+      setTechnologies([]);
+      setTechnologiesLoadError('Erro ao carregar tecnologias.');
     }
   };
 
@@ -127,9 +159,11 @@ export default function PackagesUpload() {
   };
 
   const onSubmit = async (data: PackageFormData) => {
+    const log = '[PackagesUpload.onSubmit]';
+    let createdPackageId: number | null = null;
     try {
       if (isNewUpload) {
-        // Criar novo package
+        console.log(log, 'Criando novo pacote', { name: data.name, technologyId: data.technologyId });
         const inputPackage: IPackageCreateInputDto = {
           name: data.name,
           description: data.description,
@@ -137,9 +171,11 @@ export default function PackagesUpload() {
         };
 
         const createdPackage = await packagesService.createPackege(inputPackage);
+        createdPackageId = createdPackage.id;
+        console.log(log, 'Pacote criado', { id: createdPackage.id });
 
-        // Criar versão do package
         if (data.file && data.file.length > 0) {
+          console.log(log, 'Enviando versão (zip)', { packageId: createdPackage.id, version: data.version, file: data.file[0]?.name });
           const inputPackageVersion: IPackageVersionCreateInputDto & { file: File } = {
             version: data.version,
             file: data.file[0],
@@ -148,12 +184,13 @@ export default function PackagesUpload() {
           };
 
           await packagesVersionsService.createPackageVersion(inputPackageVersion);
+          console.log(log, 'Versão criada com sucesso');
           showToast('Sucess', 'Package create successfully', 'success');
           navigate('/packages');
         }
       } else {
-        // Upgrade de package existente
         if (data.file && data.file.length > 0 && idSelectedPackage) {
+          console.log(log, 'Upgrade versão', { packageId: idSelectedPackage, version: data.version, file: data.file[0]?.name });
           const inputPackageVersion: IPackageVersionCreateInputDto & { file: File } = {
             version: data.version,
             file: data.file[0],
@@ -162,12 +199,40 @@ export default function PackagesUpload() {
           };
 
           await packagesVersionsService.createPackageVersion(inputPackageVersion);
+          console.log(log, 'Versão atualizada com sucesso');
           showToast('Sucess', 'Package version update successfully', 'success');
           navigate('/packages');
         }
       }
-    } catch (error: any) {
-      const message = error.response?.data?.message || t('pages.packagesUpload.uploadError');
+    } catch (error: unknown) {
+      if (createdPackageId != null) {
+        try {
+          await packagesService.deletePackage(createdPackageId);
+          console.log(log, 'Pacote órfão removido após falha na versão', { id: createdPackageId });
+        } catch (deleteErr) {
+          console.error(log, 'Falha ao remover pacote órfão', deleteErr);
+        }
+      }
+      const err = error as {
+        response?: {
+          data?: {
+            message?: string;
+            detail?: string;
+            title?: string;
+            extensions?: { errorDescription?: string };
+          };
+          status?: number;
+        };
+        code?: string;
+      };
+      const data = err?.response?.data;
+      const message =
+        data?.extensions?.errorDescription ??
+        data?.detail ??
+        data?.title ??
+        data?.message ??
+        t('pages.packagesUpload.uploadError');
+      console.error(log, 'Erro no submit', { message, status: err?.response?.status, code: err?.code, data });
       showToast('Error', message, 'error');
     }
   };
@@ -257,6 +322,7 @@ export default function PackagesUpload() {
                   min: { value: 1, message: t('pages.packagesUpload.technologyRequired') },
                 })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                disabled={technologies.length === 0 && !!technologiesLoadError}
               >
                 <option value={0}>{t('pages.packagesUpload.filterTechnology')}</option>
                 {technologies.map((tech) => (
@@ -265,6 +331,21 @@ export default function PackagesUpload() {
                   </option>
                 ))}
               </select>
+              {technologiesLoadError && (
+                <p className="mt-1 text-sm text-amber-600 flex items-center gap-2">
+                  {technologiesLoadError}
+                  <button
+                    type="button"
+                    onClick={loadTechnology}
+                    className="text-primary hover:underline font-medium"
+                  >
+                    Tentar novamente
+                  </button>
+                </p>
+              )}
+              {technologies.length === 0 && !technologiesLoadError && (
+                <p className="mt-1 text-sm text-gray-500">Carregando tecnologias...</p>
+              )}
               {errors.technologyId && (
                 <p className="mt-1 text-sm text-red-600">{errors.technologyId.message}</p>
               )}

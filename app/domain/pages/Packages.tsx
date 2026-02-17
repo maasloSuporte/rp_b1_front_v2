@@ -10,10 +10,13 @@ import DynamicTable from '../../components/DynamicTable';
 import type { TableColumn, ActionMenuItem } from '../../types/table';
 import type { IPaginationOutputDto, IPackageGetOutputDto } from '../../types/models';
 
+const PACKAGES_LOG = '[Packages]';
+
 export default function Packages() {
   const { t } = useTranslation('translation');
   const navigate = useNavigate();
   const confirmDownload = useModalStore((state) => state.confirmDownload);
+  const confirmDelete = useModalStore((state) => state.confirmDelete);
   const showToast = useNotificationStore((state) => state.showToast);
   const [data, setData] = useState<any[]>([]);
   const [totalItems, setTotalItems] = useState(0);
@@ -31,7 +34,11 @@ export default function Packages() {
   );
 
   const actionMenuItems: ActionMenuItem[] = useMemo(
-    () => [{ label: t('pages.packages.download'), action: 'download', icon: 'download' }],
+    () => [
+      { label: t('pages.packages.download'), action: 'download', icon: 'download' },
+      { label: t('pages.packages.upgrade') || 'Upgrade', action: 'edit', icon: 'edit' },
+      { label: t('common.actions.delete') || 'Excluir', action: 'delete', icon: 'trash' },
+    ],
     [t]
   );
 
@@ -56,11 +63,40 @@ export default function Packages() {
     }
   };
 
-  const handleActionClick = async (event: { action: string, item: any }) => {
+  const handleActionClick = async (event: { action: string; item: any }) => {
     switch (event.action) {
       case 'download':
         await handleDownload(event.item);
         break;
+      case 'edit':
+        handleEdit(event.item);
+        break;
+      case 'delete':
+        await handleDelete(event.item);
+        break;
+    }
+  };
+
+  const handleEdit = (item: any) => {
+    console.log(PACKAGES_LOG, 'edit (upgrade)', item?.id, item?.Name);
+    navigate('/packages/upload', { state: { isNew: false, packageId: item.id } });
+  };
+
+  const handleDelete = async (item: any) => {
+    const name = item?.Name ?? `#${item?.id}`;
+    console.log(PACKAGES_LOG, 'delete', item?.id, name);
+    const confirmed = await confirmDelete({ itemName: name });
+    if (!confirmed) return;
+    try {
+      await packagesService.deletePackage(item.id);
+      showToast('Success', t('pages.packages.deleteSuccess'), 'success');
+      loadPackages();
+    } catch (error: unknown) {
+      console.error(PACKAGES_LOG, 'delete error', error);
+      const res = (error as { response?: { status?: number; data?: Record<string, unknown> } })?.response;
+      const data = res?.data as { detail?: string; title?: string; extensions?: { errorDescription?: string } } | undefined;
+      const msg = data?.extensions?.errorDescription ?? data?.detail ?? data?.title ?? (error as Error)?.message ?? t('pages.packages.deleteError');
+      showToast('Error', String(msg), 'error');
     }
   };
 

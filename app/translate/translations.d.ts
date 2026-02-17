@@ -201,6 +201,8 @@ export type TranslationsType = {
       upload: string;
       new: string;
       upgrade: string;
+      deleteSuccess: string;
+      deleteError: string;
     };
     machines: {
       title: string;
@@ -349,6 +351,10 @@ export type TranslationsType = {
       title: string;
       backToAutomation: string;
       selectProject: string;
+      selectMachine: string;
+      selectPriority: string;
+      jobName: string;
+      jobNamePlaceholder: string;
       selectType: string;
       typeString: string;
       typeNumber: string;
@@ -357,6 +363,9 @@ export type TranslationsType = {
       addParameter: string;
       namePlaceholder: string;
       valuePlaceholder: string;
+      execute: string;
+      executeSuccess: string;
+      executeError: string;
     };
     project: {
       titleEdit: string;

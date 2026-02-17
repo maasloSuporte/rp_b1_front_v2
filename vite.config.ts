@@ -113,25 +113,16 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_API_URL || 'http://localhost:5143',
           changeOrigin: true,
           secure: false,
-          timeout: 30000,
+          timeout: 300000, // upload de zip grande (o limite que importa é no backend: Kestrel + FormOptions)
           ws: true,
-          configure: (proxy, _options) => {
+          configure: (proxy, options) => {
+            const target = options.target || env.VITE_API_URL || 'http://localhost:5143';
             proxy.on('error', (err, _req, res) => {
-              console.error('Proxy error:', err.message);
-              if (res && 'writeHead' in res) {
-                if (!res.headersSent) {
-                  res.writeHead(500, {
-                    'Content-Type': 'text/plain',
-                  });
-                  res.end('Proxy error: ' + err.message);
-                }
+              console.error('[vite] proxy /api ->', target, err.message);
+              if (res && 'writeHead' in res && !res.headersSent) {
+                res.writeHead(502, { 'Content-Type': 'text/plain; charset=utf-8' });
+                res.end('API indisponível. Inicie o backend (rp_b1_back) em ' + target);
               }
-            });
-            proxy.on('proxyReq', (_proxyReq, req, _res) => {
-              console.log('Sending Request to the Target:', req.method, req.url);
-            });
-            proxy.on('proxyRes', (proxyRes, req, _res) => {
-              console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
             });
           },
         },

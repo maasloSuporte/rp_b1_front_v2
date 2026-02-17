@@ -1,0 +1,1 @@
+import{w as e,d as r}from"./vendor-router-cHSbYr8A.js";import{r as a}from"./vendor-react-GjWeapsa.js";const i=e(function(){const t=r();return a.useEffect(()=>{t("/dashboard",{replace:!0})},[t]),null});export{i as default};

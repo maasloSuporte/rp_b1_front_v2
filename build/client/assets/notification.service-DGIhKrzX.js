@@ -1,0 +1,1 @@
+import{v as a}from"./vendor-react-GjWeapsa.js";const e=a(i=>({notification:null,showToast:(o,t,n)=>{i({notification:{title:o,message:t,type:n}}),setTimeout(()=>{i({notification:null})},3e3)},clearNotification:()=>i({notification:null})}));export{e as u};

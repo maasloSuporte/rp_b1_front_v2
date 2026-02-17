@@ -2,7 +2,15 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { projectsService } from '../../service/projects.service';
-import type { IProjectGetSimpleOutputDto } from '../../types/models';
+import { priorityService } from '../../service/priority.service';
+import { devicesService } from '../../service/devices.service';
+import { jobService } from '../../service/job.service';
+import { useNotificationStore } from '../../service/notification.service';
+import type {
+  IProjectGetSimpleOutputDto,
+  IPriorityGetOutputDto,
+  IDeviceGetAllOutputDto,
+} from '../../types/models';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 interface ParameterRow {
@@ -14,22 +22,38 @@ interface ParameterRow {
 export default function Execution() {
   const { t } = useTranslation('translation');
   const navigate = useNavigate();
+  const showToast = useNotificationStore((state) => state.showToast);
+
   const [projects, setProjects] = useState<IProjectGetSimpleOutputDto[]>([]);
+  const [priorities, setPriorities] = useState<IPriorityGetOutputDto[]>([]);
+  const [machines, setMachines] = useState<IDeviceGetAllOutputDto[]>([]);
+
   const [selectedProject, setSelectedProject] = useState<number>(0);
+  const [selectedMachine, setSelectedMachine] = useState<number>(0);
+  const [selectedPriority, setSelectedPriority] = useState<number>(0);
+  const [jobName, setJobName] = useState('');
   const [parameterRows, setParameterRows] = useState<ParameterRow[]>([
-    { name: '', type: '', value: '' }
+    { name: '', type: '', value: '' },
   ]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    loadProjects();
+    loadData();
   }, []);
 
-  const loadProjects = async () => {
+  const loadData = async () => {
     try {
-      const result = await projectsService.getProjects();
-      setProjects(result);
+      const [projectsData, prioritiesData, machinesData] = await Promise.all([
+        projectsService.getProjects(),
+        priorityService.getPriority(),
+        devicesService.getDevices(),
+      ]);
+      setProjects(projectsData);
+      setPriorities(prioritiesData);
+      setMachines(machinesData);
     } catch (error) {
-      console.error('Erro ao carregar projetos:', error);
+      console.error('Erro ao carregar dados:', error);
+      showToast(t('common.states.error'), t('pages.execution.executeError'), 'error');
     }
   };
 
@@ -51,8 +75,32 @@ export default function Execution() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implementar lógica de execução
-    console.log('Executar projeto:', selectedProject, parameterRows);
+
+    if (selectedProject === 0 || selectedMachine === 0 || selectedPriority === 0) {
+      showToast(t('common.states.error'), t('pages.execution.executeError'), 'error');
+      return;
+    }
+
+    const name = jobName.trim() || `Execution-${Date.now()}`;
+    setIsSubmitting(true);
+
+    try {
+      const created = await jobService.createJob({
+        name,
+        projectId: selectedProject,
+        priorityId: selectedPriority,
+        machineId: selectedMachine,
+      });
+
+      await jobService.executeJob(created.id);
+      showToast(t('common.states.success'), t('pages.execution.executeSuccess'), 'success');
+      navigate('/jobs');
+    } catch (error: any) {
+      const message = error.response?.data?.message || t('pages.execution.executeError');
+      showToast(t('common.states.error'), message, 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -68,6 +116,19 @@ export default function Execution() {
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-card p-6">
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            {t('pages.execution.jobName')}
+          </label>
+          <input
+            type="text"
+            value={jobName}
+            onChange={(e) => setJobName(e.target.value)}
+            placeholder={t('pages.execution.jobNamePlaceholder')}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
+
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             {t('pages.execution.selectProject')} <span className="text-red-500">*</span>
@@ -88,9 +149,52 @@ export default function Execution() {
         </div>
 
         <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            {t('pages.execution.selectMachine')} <span className="text-red-500">*</span>
+          </label>
+          <select
+            value={selectedMachine}
+            onChange={(e) => setSelectedMachine(Number(e.target.value))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            required
+          >
+            <option value={0}>{t('pages.execution.selectMachine')}</option>
+            {machines.map((machine) => (
+              <option key={machine.id} value={machine.id}>
+                {machine.machineName}
+              </option>
+            ))}
+          </select>
+          {machines.length === 0 && (
+            <p className="mt-1 text-sm text-amber-600">
+              Nenhuma máquina registrada. O agent precisa estar instalado e conectado na máquina para aparecer aqui.
+            </p>
+          )}
+        </div>
+
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            {t('pages.execution.selectPriority')} <span className="text-red-500">*</span>
+          </label>
+          <select
+            value={selectedPriority}
+            onChange={(e) => setSelectedPriority(Number(e.target.value))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            required
+          >
+            <option value={0}>{t('pages.execution.selectPriority')}</option>
+            {priorities.map((priority) => (
+              <option key={priority.id} value={priority.id}>
+                {priority.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="mb-6">
           <div className="flex justify-between items-center mb-4">
             <label className="block text-sm font-medium text-gray-700">
-              {t('pages.execution.parameters')}
+              {t('pages.execution.parameters')} <span className="text-gray-400 font-normal">(opcional)</span>
             </label>
             <button
               type="button"
@@ -157,13 +261,14 @@ export default function Execution() {
             onClick={() => navigate('/automation')}
             className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
           >
-            Cancel
+            {t('common.buttons.cancel')}
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
+            disabled={isSubmitting}
+            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Execute
+            {isSubmitting ? '...' : t('pages.execution.execute')}
           </button>
         </div>
       </form>

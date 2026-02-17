@@ -1,1 +1,0 @@
-import{r as t,c as o,j as r}from"./vendor-react-D3RE0R8o.js";import{H as s}from"./vendor-router-C5YTkdq4.js";t.startTransition(()=>{o.hydrateRoot(document,r.jsx(t.StrictMode,{children:r.jsx(s,{})}))});

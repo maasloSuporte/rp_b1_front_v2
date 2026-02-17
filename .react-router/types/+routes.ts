@@ -109,12 +109,17 @@ type Pages = {
   "/login": {
     params: {};
   };
+  "/*": {
+    params: {
+      "*": string;
+    };
+  };
 };
 
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/job-details/:id" | "/permissions" | "/permissions/:id" | "/automation" | "/dashboard" | "/execution" | "/scheduled" | "/scheduled/create" | "/scheduled/:id" | "/machines" | "/packages" | "/packages/upload" | "/machine" | "/machine/create" | "/machine/:id" | "/project" | "/project/:id" | "/assets" | "/assets/create" | "/assets/:id" | "/queues" | "/roles" | "/users" | "/users/create" | "/users/:id" | "/jobs" | "/login";
+    page: "/" | "/job-details/:id" | "/permissions" | "/permissions/:id" | "/automation" | "/dashboard" | "/execution" | "/scheduled" | "/scheduled/create" | "/scheduled/:id" | "/machines" | "/packages" | "/packages/upload" | "/machine" | "/machine/create" | "/machine/:id" | "/project" | "/project/:id" | "/assets" | "/assets/create" | "/assets/:id" | "/queues" | "/roles" | "/users" | "/users/create" | "/users/:id" | "/jobs" | "/login" | "/*";
   };
   "routes/_layout.tsx": {
     id: "routes/_layout";
@@ -171,6 +176,10 @@ type RouteFiles = {
   "routes/_layout.packages.upload.tsx": {
     id: "routes/_layout.packages.upload";
     page: "/packages/upload";
+  };
+  "routes/_layout.packages._index.tsx": {
+    id: "routes/_layout.packages._index";
+    page: "/packages";
   };
   "routes/_layout.machine.tsx": {
     id: "routes/_layout.machine";
@@ -244,6 +253,10 @@ type RouteFiles = {
     id: "routes/login";
     page: "/login";
   };
+  "routes/$.tsx": {
+    id: "routes/$";
+    page: "/*";
+  };
 };
 
 type RouteModules = {
@@ -262,6 +275,7 @@ type RouteModules = {
   "routes/_layout.machines": typeof import("./app/routes/_layout.machines.tsx");
   "routes/_layout.packages": typeof import("./app/routes/_layout.packages.tsx");
   "routes/_layout.packages.upload": typeof import("./app/routes/_layout.packages.upload.tsx");
+  "routes/_layout.packages._index": typeof import("./app/routes/_layout.packages._index.tsx");
   "routes/_layout.machine": typeof import("./app/routes/_layout.machine.tsx");
   "routes/_layout.machine.create": typeof import("./app/routes/_layout.machine.create.tsx");
   "routes/_layout.machine.$id": typeof import("./app/routes/_layout.machine.$id.tsx");
@@ -280,4 +294,5 @@ type RouteModules = {
   "routes/_layout.jobs": typeof import("./app/routes/_layout.jobs.tsx");
   "routes/_index": typeof import("./app/routes/_index.tsx");
   "routes/login": typeof import("./app/routes/login.tsx");
+  "routes/$": typeof import("./app/routes/$.tsx");
 };

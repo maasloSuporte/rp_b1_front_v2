@@ -10,7 +10,7 @@ import type {
 
 export const packagesService = {
   createPackege: async (pkg: IPackageCreateInputDto): Promise<IPackageCreateOutputDto> => {
-    const response = await api.post<IPackageCreateOutputDto>('/packages', pkg);
+    const response = await api.post<IPackageCreateOutputDto>('/packages/create', pkg);
     return response.data;
   },
 
@@ -29,5 +29,9 @@ export const packagesService = {
   getPackageCompany: async (): Promise<IPackageCompanyGetOutputDto[]> => {
     const response = await api.get<IPackageCompanyGetOutputDto[]>('/packages/company-packages');
     return response.data;
+  },
+
+  deletePackage: async (id: number): Promise<void> => {
+    await api.delete(`/packages/${id}`);
   },
 };

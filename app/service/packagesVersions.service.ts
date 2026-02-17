@@ -5,28 +5,45 @@ import type {
   IPackageVersionGetOutputDto,
 } from '../types/models';
 
+const LOG = '[packagesVersions]';
+
 export const packagesVersionsService = {
   createPackageVersion: async (
     packageVersion: IPackageVersionCreateInputDto & { file: File }
   ): Promise<IPackageVersionCreateOutputDto> => {
     const formData = new FormData();
     formData.append('File', packageVersion.file, packageVersion.file.name);
+    formData.append('Description', packageVersion.description);
+    formData.append('PackageId', packageVersion.packageId.toString());
+    formData.append('Version', packageVersion.version ?? '');
 
-    const params = new URLSearchParams();
-    params.append('Description', packageVersion.description);
-    params.append('PackageId', packageVersion.packageId.toString());
-    params.append('Version', packageVersion.version);
+    console.log(`${LOG} createPackageVersion: payload`, {
+      packageId: packageVersion.packageId,
+      version: packageVersion.version,
+      description: packageVersion.description,
+      fileName: packageVersion.file?.name,
+      fileSize: packageVersion.file?.size,
+      formDataKeys: Array.from(formData.keys()),
+    });
 
-    const response = await api.post<IPackageVersionCreateOutputDto>(
-      `/packageVersions?${params.toString()}`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    );
-    return response.data;
+    try {
+      const response = await api.post<IPackageVersionCreateOutputDto>(
+        '/packageVersions',
+        formData,
+        { timeout: 120000 } // 2 min; Content-Type é removido pelo interceptor quando data é FormData
+      );
+      console.log(`${LOG} createPackageVersion: success`, response.status, response.data);
+      return response.data;
+    } catch (err: unknown) {
+      const axiosErr = err as { code?: string; message?: string; response?: { status?: number; data?: unknown } };
+      console.error(`${LOG} createPackageVersion: error`, {
+        code: axiosErr?.code,
+        message: axiosErr?.message,
+        status: axiosErr?.response?.status,
+        data: axiosErr?.response?.data,
+      });
+      throw err;
+    }
   },
 
   getDownloadPackage: async (id: number): Promise<Blob> => {

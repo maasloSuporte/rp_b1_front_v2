@@ -1,1 +1,0 @@
-import{a}from"./api-BB9j10S9.js";const r={createCompanyUser:async s=>(await a.post("/companyUsers",s)).data,getAllUsers:async s=>{const e=await a.get(`/companyUsers?${s}`);return console.log(e.data),e.data},getRoles:async()=>(await a.get("/companyUsers/roles")).data};export{r as c};

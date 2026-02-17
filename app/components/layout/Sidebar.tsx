@@ -71,12 +71,12 @@ export default function Sidebar({
     return location.pathname === r || location.pathname.startsWith(`${r}/`);
   };
 
-  const renderNavItem = (item: NavItem, depth: number = 0) => {
+  const renderNavItem = (item: NavItem, depth: number = 0, index?: number) => {
     if (item.navCap) {
       if (isCollapsed) return null;
       return (
         <div
-          key={item.navCap}
+          key={`cap-${item.navCap}`}
           className="px-5 py-2.5 mt-4 first:mt-2 text-[11px] font-semibold text-white/50 uppercase tracking-widest"
         >
           {t(item.navCap as never)}
@@ -87,7 +87,7 @@ export default function Sidebar({
     if (item.external) {
       return (
         <a
-          key={item.displayName}
+          key={`ext-${item.displayName}-${item.route}`}
           href={item.route}
           target="_blank"
           rel="noopener noreferrer"
@@ -111,10 +111,11 @@ export default function Sidebar({
     const basePadding = isCollapsed ? 'justify-center py-3 px-2.5' : 'pl-5 gap-3 py-3 pr-5';
     const indent = depth > 0 && !isCollapsed ? { paddingLeft: `${1.25 + depth * 1.25}rem` } : undefined;
 
+    const itemKey = `nav-${depth}-${item.route ?? item.displayName ?? index ?? ''}`;
     // Colapsado com filhos: só ícone (subitens ficam ocultos até expandir a sidebar)
     if (isCollapsed && hasChildren) {
       return (
-        <div key={item.displayName || item.route}>
+        <div key={itemKey}>
           <button
             type="button"
             onClick={() => toggleExpand(item)}
@@ -134,7 +135,7 @@ export default function Sidebar({
     }
 
     return (
-      <div key={item.displayName || item.route}>
+      <div key={itemKey}>
         {item.route && !hasChildren ? (
           <Link
             to={normalizeRoute(item.route) || '#'}
@@ -181,7 +182,7 @@ export default function Sidebar({
             </button>
             {hasChildren && isExpanded && !isCollapsed && (
               <div className="mt-1 space-y-1 border-l border-white/10 ml-7 pl-2">
-                {item.children?.map((child) => renderNavItem(child, depth + 1))}
+                {item.children?.map((child, childIndex) => renderNavItem(child, depth + 1, childIndex))}
               </div>
             )}
           </>
@@ -226,7 +227,7 @@ export default function Sidebar({
       {/* Navegação */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3">
         <div className={`space-y-3 ${isCollapsed ? 'px-2' : 'px-0'}`}>
-          {navItems.map((item) => renderNavItem(item))}
+          {navItems.map((item, index) => renderNavItem(item, 0, index))}
         </div>
       </nav>
 

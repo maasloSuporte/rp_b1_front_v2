@@ -1,5 +1,5 @@
-import Packages from "../domain/pages/Packages";
+import { Outlet } from "react-router";
 
-export default function PackagesRoute() {
-  return <Packages />;
+export default function PackagesLayoutRoute() {
+  return <Outlet />;
 }
