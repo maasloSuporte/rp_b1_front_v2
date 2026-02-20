@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "react-router dev",
+    "dev:clean": "npx rimraf .react-router && react-router dev",
     "build": "react-router build",
     "start": "react-router-serve ./build/server/index.js",
     "lint": "eslint .",

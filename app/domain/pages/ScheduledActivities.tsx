@@ -118,7 +118,7 @@ export default function ScheduledActivities() {
   const actionMenuItems: ActionMenuItem[] = useMemo(
     () => [
       { label: t('common.buttons.edit'), action: 'edit', icon: 'edit' },
-      { label: t('pages.assets.deleted'), action: 'deleted', icon: 'deleted' },
+      { label: t('common.buttons.delete'), action: 'delete', icon: 'trash' },
     ],
     [t]
   );
@@ -194,28 +194,36 @@ export default function ScheduledActivities() {
       case 'edit':
         navigate(`/scheduled/${event.item.id}`);
         break;
-      case 'deleted':
+      case 'delete': {
         const confirmed = await confirmDelete({
           itemName: event.item.name,
         });
-        if (confirmed) {
-          try {
-            await scheduleService.deleteSchedule({ id: event.item.id });
-            showToast(
-              t('common.states.success'),
-              t('pages.scheduled.deleteSuccess'),
-              'success'
-            );
-            loadSchedule();
-          } catch (error) {
-            showToast(
-              t('common.states.error'),
-              t('pages.scheduled.deleteError'),
-              'error'
-            );
-          }
+        if (!confirmed) break;
+        const id = Number(event.item.id);
+        if (!Number.isFinite(id)) {
+          showToast(t('common.states.error'), t('pages.scheduled.deleteError'), 'error');
+          break;
+        }
+        try {
+          await scheduleService.deleteSchedule({ id });
+          showToast(
+            t('common.states.success'),
+            t('pages.scheduled.deleteSuccess'),
+            'success'
+          );
+          loadSchedule();
+        } catch (error: any) {
+          const data = error.response?.data;
+          const isDbError =
+            data?.exception === 'DbUpdateException' || error.response?.status === 500;
+          const message = isDbError
+            ? t('pages.scheduled.deleteErrorDb')
+            : (data?.message ?? data?.title ?? error.message ?? t('pages.scheduled.deleteError'));
+          showToast(t('common.states.error'), message, 'error');
+          console.error('Erro ao excluir agendamento:', data ?? error);
         }
         break;
+      }
     }
   };
 

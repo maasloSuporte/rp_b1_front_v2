@@ -5,7 +5,7 @@ import { jobService } from '../../service/job.service';
 import { useNotificationStore } from '../../service/notification.service';
 import { useModalStore } from '../../service/modal.service';
 import DynamicTable from '../../components/DynamicTable';
-import CreateJobModal from '../../components/modals/CreateJobModal';
+import CreateJobModal, { type CreateJobResult } from '../../components/modals/CreateJobModal';
 import type { TableColumn, ActionMenuItem } from '../../types/table';
 import type { IPaginationOutputDto, IJobGetAllOutputDto } from '../../types/models';
 
@@ -162,14 +162,19 @@ export default function Jobs() {
     }
   };
 
-  const handleCreateJob = async (jobData: { name: string; projectId: number; priorityId: number; machineId: number } | null) => {
+  const handleCreateJob = async (jobData: CreateJobResult | null) => {
     if (!jobData) {
       setIsCreateModalOpen(false);
       return;
     }
     try {
-      await jobService.createJob(jobData);
+      const { executeAfterCreate, ...createPayload } = jobData;
+      const created = await jobService.createJob(createPayload);
       showToast(t('common.states.success'), t('pages.jobs.createSuccess'), 'success');
+      if (executeAfterCreate && created?.id) {
+        await jobService.executeJob(created.id);
+        showToast(t('common.states.success'), t('pages.jobs.executeSuccess'), 'success');
+      }
       setIsCreateModalOpen(false);
       loadJobs();
     } catch (error: any) {

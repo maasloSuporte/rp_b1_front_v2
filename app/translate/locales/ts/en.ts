@@ -160,6 +160,7 @@ export const en: TranslationsType = {
       activitiesCount: "Activities",
       deleteSuccess: "Schedule deleted successfully",
       deleteError: "Failed to delete schedule",
+      deleteErrorDb: "Could not delete: the schedule may have related records (e.g. arguments or executions). Check server logs or remove related data first.",
     },
     jobs: {
       title: "Jobs",
@@ -222,9 +223,14 @@ export const en: TranslationsType = {
       invalidIp: "Invalid IP address format",
       deleteSuccess: "Machine deleted successfully",
       deleteError: "Failed to delete machine",
+      deleteErrorDb: "Could not delete: the machine may have related records (jobs, schedules, etc.). Remove related records first or check server logs.",
       editSuccess: "Machine edited successfully",
       createSuccess: "Machine created successfully",
       saveError: "Failed to save machine",
+      registrationToken: "Registration token (for Agent on client machine)",
+      registrationTokenHint: "Send this token and the backend URL to the client. The token expires in a few minutes; use it in the Agent Front to connect.",
+      copyToken: "Copy token",
+      tokenCopied: "Token copied",
     },
     users: {
       title: "Users",
@@ -272,6 +278,7 @@ export const en: TranslationsType = {
       delete: "Delete",
       deleteSuccess: "Project deleted successfully",
       deleteError: "Failed to delete project",
+      deleteErrorDb: "Could not delete: the project may have related records (jobs, schedules, etc.). Remove related records first or check server logs.",
     },
     schedule: {
       editSchedule: "Edit Schedule",
@@ -318,6 +325,7 @@ export const en: TranslationsType = {
       weekOfMonth: "Week of Month",
       cronScheduling: "Cron Scheduling",
       selectOption: "Select option",
+      noneOptional: "— None (optional)",
       stepsEdit: {
         step1: "Change the name and project if needed.",
         step2: "Adjust priority and execution machine.",
@@ -389,6 +397,7 @@ export const en: TranslationsType = {
       versionPackage: "Version Package",
       filterPackage: "Filter the package...",
       filterVersion: "Filter the version…",
+      noneOptional: "— None (optional)",
       editSuccess: "Project edited successfully",
       createSuccess: "Project created successfully",
       nameRequired: "Name is required",

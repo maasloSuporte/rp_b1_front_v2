@@ -11,9 +11,17 @@ import type {
   IDeviceGetAllOutputDto,
 } from '../../types/models';
 
+export type CreateJobResult = {
+  name: string;
+  projectId: number;
+  priorityId: number;
+  machineId: number;
+  executeAfterCreate?: boolean;
+};
+
 interface CreateJobModalProps {
   isOpen: boolean;
-  onClose: (result: { name: string; projectId: number; priorityId: number; machineId: number } | null) => void;
+  onClose: (result: CreateJobResult | null) => void;
 }
 
 interface JobFormData {
@@ -28,6 +36,7 @@ export default function CreateJobModal({ isOpen, onClose }: CreateJobModalProps)
   const [priorities, setPriorities] = useState<IPriorityGetOutputDto[]>([]);
   const [machines, setMachines] = useState<IDeviceGetAllOutputDto[]>([]);
   const [loading, setLoading] = useState(false);
+  const [executeAfterCreate, setExecuteAfterCreate] = useState(false);
 
   const {
     register,
@@ -47,6 +56,7 @@ export default function CreateJobModal({ isOpen, onClose }: CreateJobModalProps)
     if (isOpen) {
       loadData();
       reset();
+      setExecuteAfterCreate(false);
     }
   }, [isOpen, reset]);
 
@@ -76,6 +86,7 @@ export default function CreateJobModal({ isOpen, onClose }: CreateJobModalProps)
         projectId: data.projectId,
         priorityId: data.priorityId,
         machineId: data.machineId,
+        executeAfterCreate,
       });
     } catch (error) {
       console.error('Erro ao criar job:', error);
@@ -200,6 +211,19 @@ export default function CreateJobModal({ isOpen, onClose }: CreateJobModalProps)
                       {errors.machineId && (
                         <p className="mt-1 text-sm text-red-600">{errors.machineId.message}</p>
                       )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="executeAfterCreate"
+                        checked={executeAfterCreate}
+                        onChange={(e) => setExecuteAfterCreate(e.target.checked)}
+                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                      />
+                      <label htmlFor="executeAfterCreate" className="text-sm text-gray-700">
+                        Executar após criar
+                      </label>
                     </div>
                   </div>
 

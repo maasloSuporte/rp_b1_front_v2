@@ -19,8 +19,8 @@ interface ProjectFormData {
   description: string;
   status: string;
   packageVersionId: number;
-  active: boolean;
-  autoUpdate: boolean;
+  active: string;
+  autoUpdate: string;
   package: number;
 }
 
@@ -41,18 +41,20 @@ export default function Project() {
     setValue,
     watch,
   } = useForm<ProjectFormData>({
+    mode: 'onChange',
     defaultValues: {
       name: '',
       description: '',
       status: '',
       packageVersionId: 0,
-      active: false,
-      autoUpdate: false,
+      active: 'false',
+      autoUpdate: 'false',
       package: 0,
     },
   });
 
-  const selectedPackage = watch('package');
+  const watched = watch();
+  const selectedPackage = watched.package;
 
   useEffect(() => {
     const initialize = async () => {
@@ -68,13 +70,15 @@ export default function Project() {
     if (selectedPackage > 0) {
       loadPackageVersions(selectedPackage);
       setIsPackageSelected(true);
-      setValue('packageVersionId', 0);
+      if (!isEditMode) {
+        setValue('packageVersionId', 0);
+      }
     } else {
       setPackageVersions([]);
       setIsPackageSelected(false);
       setValue('packageVersionId', 0);
     }
-  }, [selectedPackage]);
+  }, [selectedPackage, isEditMode]);
 
   const loadPackages = async () => {
     try {
@@ -109,13 +113,13 @@ export default function Project() {
       setValue('name', project.name);
       setValue('description', project.description);
       setValue('status', project.status);
-      setValue('active', project.active);
-      setValue('autoUpdate', project.autoUpdate);
-      setValue('packageVersionId', project.packageVersionId);
+      setValue('active', project.active ? 'true' : 'false');
+      setValue('autoUpdate', project.autoUpdate ? 'true' : 'false');
       setValue('package', selectedPackageId);
 
       if (selectedPackageId > 0) {
         await loadPackageVersions(selectedPackageId);
+        setValue('packageVersionId', project.packageVersionId);
       }
     } catch (error) {
       console.error('Erro ao carregar projeto:', error);
@@ -130,8 +134,8 @@ export default function Project() {
           description: data.description,
           status: data.status,
           packageVersionId: data.packageVersionId,
-          active: data.active,
-          autoUpdate: data.autoUpdate,
+          active: data.active === 'true',
+          autoUpdate: data.autoUpdate === 'true',
         };
         await projectsService.updateProject(Number(id), updateInput);
         showToast('Sucess', 'Project edited successfully', 'success');
@@ -142,8 +146,8 @@ export default function Project() {
           description: data.description,
           status: data.status,
           packageVersionId: data.packageVersionId,
-          active: data.active,
-          autoUpdate: data.autoUpdate,
+          active: data.active === 'true',
+          autoUpdate: data.autoUpdate === 'true',
         };
         await projectsService.createProject(inputProject);
         showToast('Success', 'Project created successfully', 'success');
@@ -186,13 +190,13 @@ export default function Project() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <FormSelect label={t('pages.project.active')} {...register('active')}>
+              <FormSelect label={t('pages.project.active')} value={watched.active} {...register('active')}>
                 <option value="true">{t('common.true')}</option>
                 <option value="false">{t('common.false')}</option>
               </FormSelect>
             </div>
             <div>
-              <FormSelect label={t('pages.project.autoUpdateVersion')} {...register('autoUpdate')}>
+              <FormSelect label={t('pages.project.autoUpdateVersion')} value={watched.autoUpdate} {...register('autoUpdate')}>
                 <option value="true">{t('common.true')}</option>
                 <option value="false">{t('common.false')}</option>
               </FormSelect>
@@ -229,14 +233,11 @@ export default function Project() {
           <div>
             <FormSelect
               label={t('pages.project.packageName')}
-              required
+              value={watched.package}
               error={errors.package?.message}
-              {...register('package', {
-                required: t('pages.project.packageRequired'),
-                min: { value: 1, message: t('pages.project.packageRequired') },
-              })}
+              {...register('package')}
             >
-              <option value={0}>{t('pages.project.filterPackage')}</option>
+              <option value={0}>{t('pages.project.noneOptional')}</option>
               {packageList.map((pkg) => (
                 <option key={pkg.id} value={pkg.id}>
                   {pkg.name}
@@ -248,16 +249,13 @@ export default function Project() {
           <div>
             <FormSelect
               label={t('pages.project.versionPackage')}
-              required
+              value={watched.packageVersionId}
               error={errors.packageVersionId?.message}
-              disabled={!isPackageSelected || isEditMode}
+              disabled={!isPackageSelected}
               className="disabled:bg-background disabled:cursor-not-allowed"
-              {...register('packageVersionId', {
-                required: t('pages.project.versionRequired'),
-                min: { value: 1, message: t('pages.project.versionRequired') },
-              })}
+              {...register('packageVersionId')}
             >
-              <option value={0}>{t('pages.project.filterVersion')}</option>
+              <option value={0}>{t('pages.project.noneOptional')}</option>
               {packageVersions.map((pkgVersion) => (
                 <option key={pkgVersion.id} value={pkgVersion.id}>
                   {pkgVersion.version}

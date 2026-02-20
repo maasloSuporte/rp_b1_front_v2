@@ -171,10 +171,10 @@ export default function Schedule() {
       const schedule = await scheduleService.getByIdSchedule(scheduleId);
       setValue('name', schedule.name);
       setValue('details', schedule.details);
-      setValue('frequencyId', schedule.frequencyId);
-      setValue('projectId', schedule.projectId);
-      setValue('machineId', schedule.machineId);
-      setValue('priority', schedule.priorityId);
+      setValue('frequencyId', schedule.frequencyId ?? 0);
+      setValue('projectId', schedule.projectId ?? 0);
+      setValue('machineId', schedule.machineId ?? 0);
+      setValue('priority', schedule.priorityId ?? 0);
 
       const cron = schedule.schedule;
       if (cron) {
@@ -351,8 +351,8 @@ export default function Schedule() {
           name: data.name.trim(),
           priority: data.priority,
           details: data.details.trim(),
-          projectId: data.projectId,
-          machineId: data.machineId,
+          projectId: data.projectId > 0 ? data.projectId : null,
+          machineId: data.machineId > 0 ? data.machineId : null,
         };
         await scheduleService.updateSchedule(Number(id), updateInput);
         showToast(t('common.states.success'), t('pages.schedule.updatedSuccess'), 'success');
@@ -718,11 +718,10 @@ export default function Schedule() {
             <Controller
               name="projectId"
               control={control}
-              rules={{ required: t('pages.schedule.projectRequired'), min: { value: 1, message: t('pages.schedule.projectRequired') } }}
+              rules={{}}
               render={({ field }) => (
                 <FormSelect
                   label={t('pages.schedule.project')}
-                  required
                   error={errors.projectId?.message}
                   name={field.name}
                   value={field.value}
@@ -735,7 +734,7 @@ export default function Schedule() {
                   onBlur={field.onBlur}
                   ref={field.ref}
                 >
-                  <option value={0}>{t('pages.schedule.selectOption')}</option>
+                  <option value={0}>{t('pages.schedule.noneOptional')}</option>
                   {projects.map((project) => (
                     <option key={project.id} value={project.id}>
                       {project.name}
@@ -750,11 +749,10 @@ export default function Schedule() {
             <Controller
               name="priority"
               control={control}
-              rules={{ required: t('pages.schedule.priorityRequired'), min: { value: 1, message: t('pages.schedule.priorityRequired') } }}
+              rules={{}}
               render={({ field }) => (
                 <FormSelect
                   label={t('pages.schedule.priority')}
-                  required
                   error={errors.priority?.message}
                   name={field.name}
                   value={field.value}
@@ -767,7 +765,7 @@ export default function Schedule() {
                   onBlur={field.onBlur}
                   ref={field.ref}
                 >
-                  <option value={0}>{t('pages.schedule.selectOption')}</option>
+                  <option value={0}>{t('pages.schedule.noneOptional')}</option>
                   {priorities.map((priority) => {
                     const key = PRIORITY_ID_TO_KEY[priority.id] ?? PRIORITY_KEYS[priority.name];
                     const label = key ? t(`pages.schedule.priorities.${key}`) : priority.name;
@@ -786,11 +784,10 @@ export default function Schedule() {
             <Controller
               name="frequencyId"
               control={control}
-              rules={{ required: t('pages.schedule.frequencyRequired'), min: { value: 1, message: t('pages.schedule.frequencyRequired') } }}
+              rules={{}}
               render={({ field }) => (
                 <FormSelect
                   label={t('pages.schedule.frequency')}
-                  required
                   error={errors.frequencyId?.message}
                   name={field.name}
                   value={field.value}
@@ -806,7 +803,7 @@ export default function Schedule() {
                   onBlur={field.onBlur}
                   ref={field.ref}
                 >
-                  <option value={0}>{t('pages.schedule.selectOption')}</option>
+                  <option value={0}>{t('pages.schedule.noneOptional')}</option>
                   {frequencies.map((frequency) => {
                     const key = FREQUENCY_ID_TO_KEY[frequency.id] ?? FREQUENCY_KEYS[frequency.name];
                     const label = key ? t(`pages.schedule.frequencies.${key}`) : frequency.name;
@@ -825,11 +822,10 @@ export default function Schedule() {
             <Controller
               name="machineId"
               control={control}
-              rules={{ required: t('pages.schedule.machineRequired'), min: { value: 1, message: t('pages.schedule.machineRequired') } }}
+              rules={{}}
               render={({ field }) => (
                 <FormSelect
                   label={t('pages.schedule.machine')}
-                  required
                   error={errors.machineId?.message}
                   name={field.name}
                   value={field.value}
@@ -842,7 +838,7 @@ export default function Schedule() {
                   onBlur={field.onBlur}
                   ref={field.ref}
                 >
-                  <option value={0}>{t('pages.schedule.selectOption')}</option>
+                  <option value={0}>{t('pages.schedule.noneOptional')}</option>
                   {machines.map((machine) => (
                     <option key={machine.id} value={machine.id}>
                       {machine.machineName}

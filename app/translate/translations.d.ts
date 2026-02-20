@@ -162,6 +162,7 @@ export type TranslationsType = {
       activitiesCount: string;
       deleteSuccess: string;
       deleteError: string;
+      deleteErrorDb: string;
     };
     jobs: {
       title: string;
@@ -224,9 +225,14 @@ export type TranslationsType = {
       invalidIp: string;
       deleteSuccess: string;
       deleteError: string;
+      deleteErrorDb: string;
       editSuccess: string;
       createSuccess: string;
       saveError: string;
+      registrationToken: string;
+      registrationTokenHint: string;
+      copyToken: string;
+      tokenCopied: string;
     };
     users: {
       title: string;
@@ -274,6 +280,7 @@ export type TranslationsType = {
       delete: string;
       deleteSuccess: string;
       deleteError: string;
+      deleteErrorDb: string;
     };
     schedule: {
       editSchedule: string;
@@ -320,6 +327,7 @@ export type TranslationsType = {
       weekOfMonth: string;
       cronScheduling: string;
       selectOption: string;
+      noneOptional: string;
       stepsEdit: { step1: string; step2: string; step3: string; step4: string };
       stepsCreate: { step1: string; step2: string; step3: string; step4: string; step5: string };
       validationHourlyRepeat: string;
@@ -380,6 +388,7 @@ export type TranslationsType = {
       versionPackage: string;
       filterPackage: string;
       filterVersion: string;
+      noneOptional: string;
       editSuccess: string;
       createSuccess: string;
       nameRequired: string;

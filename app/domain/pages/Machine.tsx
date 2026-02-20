@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
@@ -19,6 +19,7 @@ export default function Machine() {
   const navigate = useNavigate();
   const isEditMode = !!id;
   const showToast = useNotificationStore((state) => state.showToast);
+  const [registrationToken, setRegistrationToken] = useState<string>('');
 
   const {
     register,
@@ -47,8 +48,19 @@ export default function Machine() {
       setValue('environment', device.environment || '');
       setValue('hostName', device.hostName || '');
       setValue('ip', device.ip || '');
+      setRegistrationToken(device.token || '');
     } catch (error) {
       console.error('Erro ao carregar máquina:', error);
+    }
+  };
+
+  const copyRegistrationToken = async () => {
+    if (!registrationToken) return;
+    try {
+      await navigator.clipboard.writeText(registrationToken);
+      showToast(t('common.states.success'), t('pages.machines.tokenCopied'), 'success');
+    } catch {
+      showToast(t('common.states.error'), t('pages.machines.tokenCopied'), 'error');
     }
   };
 
@@ -167,6 +179,32 @@ export default function Machine() {
                 />
                 {errors.ip && <p className="mt-1 text-sm text-red-600">{errors.ip.message}</p>}
               </div>
+
+              {registrationToken && (
+                <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t('pages.machines.registrationToken')}
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={registrationToken}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={copyRegistrationToken}
+                      className="px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 shrink-0"
+                    >
+                      {t('pages.machines.copyToken')}
+                    </button>
+                  </div>
+                  <p className="mt-2 text-xs text-gray-600">
+                    {t('pages.machines.registrationTokenHint')}
+                  </p>
+                </div>
+              )}
             </>
           )}
         </div>

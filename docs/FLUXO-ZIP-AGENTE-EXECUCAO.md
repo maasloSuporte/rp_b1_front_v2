@@ -4,6 +4,25 @@ Este documento explica como a aplicação espera receber o **zip** e como dar **
 
 ---
 
+## Checklist rápido: como executar um projeto
+
+| # | O que fazer | Onde |
+|---|-------------|------|
+| 1 | Ter um **pacote** com pelo menos uma **versão (zip)** enviada | Pacotes → Upload |
+| 2 | Ter um **projeto** vinculado a essa versão do pacote | Automação → Criar Projeto |
+| 3 | Ter pelo menos uma **máquina** com Agent instalado e registrado | Dispositivos/Máquinas |
+| 4 | **Executar:** escolher Projeto + Máquina + Prioridade e dar play | Automação → **Executar** ou Fila de Jobs → **Criar** e depois **Executar** |
+
+**Duas formas de dar play:**
+
+- **Automação → Executar**  
+  Preenche nome do job, projeto, máquina e prioridade → clica **Executar** → o front cria o job e já chama execute → redireciona para a fila de Jobs.
+
+- **Fila de Jobs (Gerenciar → Jobs)**  
+  **Criar** abre o modal: preenche e salva (job criado na fila). Na linha do job, ação **Executar** → o front chama `POST /api/jobs/{id}/execute`. Opcionalmente, ao criar, marque **Executar após criar** para criar e rodar em um clique.
+
+---
+
 ## Como rodar (front + back são processos separados)
 
 Não existe um único build que sobe tudo. São **dois (ou três) processos**:
@@ -22,11 +41,19 @@ Não existe um único build que sobe tudo. São **dois (ou três) processos**:
    ```
    → Interface em **http://localhost:8080** (ou a porta definida em `VITE_PORT` no `.env`)
 
-3. **Agent** (opcional) – em outro terminal, para executar jobs nas máquinas:
-   ```bash
-   cd rp_b1_agent
-   dotnet run --project Front/Front.csproj
-   ```
+3. **Agent** – necessário para o job rodar na máquina:
+   - **Primeira vez (registrar a máquina):** use o **Front** (WPF) para configurar a URL do backend e registrar:
+     ```bash
+     cd rp_b1_agent
+     dotnet run --project Front/Front.csproj
+     ```
+     Na janela, informe a URL do backend (ex.: `http://localhost:5143`) e conecte. Isso grava no Registry o `MachineId` e a URL.
+   - **Para executar jobs:** use o **Worker** (quem de fato puxa e executa os jobs):
+     ```bash
+     cd rp_b1_agent
+     dotnet run --project Worker/Worker.csproj
+     ```
+     O Worker conecta ao SignalR, solicita jobs a cada ~15 s e executa na máquina. **Sem o Worker rodando, o job fica na fila e nunca executa.**
 
 O front envia as requisições para a API (por proxy ou direto, conforme `VITE_API_URL` no `.env`). O backend precisa estar rodando antes de usar o front.
 
@@ -38,6 +65,22 @@ O front envia as requisições para a API (por proxy ou direto, conforme `VITE_A
 2. Um **Projeto** de automação usa uma **versão** desse pacote (`packageVersionId`).
 3. A execução acontece em **máquinas** que têm o **Agent** instalado e registrado no backend.
 4. **Dar play** = criar um **Job** (projeto + máquina + prioridade) e chamar **Execute**; o backend envia o job para o agent da máquina, que baixa o pacote (zip) e executa.
+
+---
+
+## Por que o job não está rodando? (checklist de diagnóstico)
+
+Se você já subiu o pacote e criou o projeto, mas o job fica parado (não executa), confira:
+
+| Verificação | O que fazer |
+|-------------|-------------|
+| **Backend está rodando?** | Em um terminal: `cd rp_b1_back` e `dotnet run --project Api`. Deve subir em **http://localhost:5143** (perfil `http`) ou **https://localhost:7154** (perfil `https`). |
+| **A máquina aparece em Dispositivos?** | Se não aparecer, a máquina não está registrada. Rode o Agent **Front** (`dotnet run --project Front/Front.csproj`), informe a URL do backend (ex.: `http://localhost:5143`) e conecte para registrar. |
+| **O Worker do Agent está rodando?** | O **Front** só registra e monitora; quem executa jobs é o **Worker**. Rode `dotnet run --project Worker/Worker.csproj` no `rp_b1_agent`. Sem o Worker, o backend nunca “entrega” o job a ninguém. |
+| **URL do Agent = URL do Backend?** | O Worker usa a URL gravada no Registry (quando você conectou pelo Front). Se o backend está em `http://localhost:5143`, ao registrar no Front use exatamente essa URL. Em DEBUG, se não houver Registry, o Worker usa `http://localhost:5143` por padrão. |
+| **Job na fila com a máquina certa?** | Ao criar/executar, escolha a **máquina** onde o Worker está rodando. O backend só entrega jobs PENDING para o Agent quando esse Agent (por `machineId`) chama `RequestJob` via SignalR. |
+
+Resumo: **Backend (Api) + Frontend (npm run dev) + Agent Worker (Worker.csproj)** precisam estar em execução, e a máquina deve estar registrada (uma vez pelo Agent Front) e selecionada no job.
 
 ---
 
@@ -65,7 +108,7 @@ O front envia as requisições para a API (por proxy ou direto, conforme `VITE_A
   - se registra no backend (API),
   - aparece na lista **Dispositivos/Máquinas** no front (com `agentVersion`, etc.),
   - recebe jobs do backend, baixa o pacote (zip) da versão indicada e executa na máquina.
-- Este repositório é só o **front-end**; o **Agent** é outro componente (outro repositório ou instalador). Sem o agent instalado e registrado, a máquina não aparece e não executa.
+- Este repositório é só o **front-end**; o **Agent** é outro componente (repositório `rp_b1_agent`). Sem o agent **registrado** (via Front), a máquina não aparece na lista; sem o **Worker** rodando, o job fica PENDING e nunca executa.
 
 ### 4. Dar play na aplicação
 
@@ -167,3 +210,13 @@ Se você tiver o zip pronto: faça o **upload** em Pacotes, crie um **Projeto** 
 
 - O front usa **`/api`** como base; o Vite faz proxy para o backend (`VITE_API_URL` ou `http://localhost:5143`). Problemas de **upload que falha** costumam ser **limite de tamanho no backend** (Kestrel/FormOptions), não proxy.
 - No `.env`: **`VITE_API_URL=http://localhost:5143`** (opcional; é o padrão no Vite).
+
+---
+
+## Documento relacionado: vínculos e ordem de exclusão
+
+- **Agent na máquina do cliente:** Para instalar e configurar o Agent na máquina do **cliente** (URL do backend, token de registro, Worker/serviço), veja **[AGENT-MAQUINA-DO-CLIENTE.md](./AGENT-MAQUINA-DO-CLIENTE.md)**.
+
+Para **saber em que ordem excluir** entidades (jobs → agendamentos → projetos → máquinas) e **por que os jobs entram na fila automaticamente** (agendamentos) e como configurar **1x por semana**, veja:
+
+- **[VINCULOS-E-ORDEM-DE-EXCLUSAO.md](./VINCULOS-E-ORDEM-DE-EXCLUSAO.md)**

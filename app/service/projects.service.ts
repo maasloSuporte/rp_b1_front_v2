@@ -43,7 +43,10 @@ export const projectsService = {
   },
 
   deleteProject: async (project: IProjectDeleteInputDto): Promise<IProjectDeleteOutputDto> => {
-    const response = await api.delete<IProjectDeleteOutputDto>(`/projects/${project.id}`);
+    const url = `/projects/${project.id}`;
+    console.log('[projects.service] deleteProject - URL:', url, 'payload id:', project.id);
+    const response = await api.delete<IProjectDeleteOutputDto>(url);
+    console.log('[projects.service] deleteProject - response status:', response.status);
     return response.data;
   },
 };

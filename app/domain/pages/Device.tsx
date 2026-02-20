@@ -31,7 +31,7 @@ export default function Device() {
   const actionMenuItems: ActionMenuItem[] = useMemo(
     () => [
       { label: t('common.buttons.edit'), action: 'edit', icon: 'edit' },
-      { label: t('pages.assets.deleted'), action: 'deleted', icon: 'block' },
+      { label: t('common.buttons.delete'), action: 'delete', icon: 'trash' },
     ],
     [t]
   );
@@ -62,20 +62,31 @@ export default function Device() {
       case 'edit':
         navigate(`/machine/${event.item.id}`);
         break;
-      case 'deleted':
+      case 'delete': {
         const confirmed = await confirmDelete({
-          itemName: event.item.hostName
+          itemName: event.item.machineName ?? event.item.hostName ?? `#${event.item.id}`,
         });
-        if (confirmed) {
-          try {
-            await devicesService.deleteDevice({ id: event.item.id });
-            showToast(t('common.states.success'), t('pages.machines.deleteSuccess'), 'success');
-            loadDevices();
-          } catch (error) {
-            showToast(t('common.states.error'), t('pages.machines.deleteError'), 'error');
-          }
+        if (!confirmed) break;
+        const id = Number(event.item.id);
+        if (!Number.isFinite(id)) {
+          showToast(t('common.states.error'), t('pages.machines.deleteError'), 'error');
+          break;
+        }
+        try {
+          await devicesService.deleteDevice({ id });
+          showToast(t('common.states.success'), t('pages.machines.deleteSuccess'), 'success');
+          loadDevices();
+        } catch (error: any) {
+          const data = error.response?.data;
+          const isDbError = data?.exception === 'DbUpdateException' || error.response?.status === 500;
+          const message = isDbError
+            ? t('pages.machines.deleteErrorDb')
+            : (data?.message ?? data?.title ?? error.message ?? t('pages.machines.deleteError'));
+          showToast(t('common.states.error'), message, 'error');
+          console.error('Erro ao excluir máquina:', data ?? error);
         }
         break;
+      }
     }
   };
 

@@ -51,21 +51,24 @@ export const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(f
   ref
 ) {
   const options = useMemo(() => parseOptionsFromChildren(children), [children]);
-  /** Opções que aparecem no dropdown (exclui placeholder value 0 ou '') */
-  const selectableOptions = useMemo(
-    () => options.filter((o) => o.value !== 0 && o.value !== ''),
-    [options]
-  );
+  /** Todas as opções no dropdown, incluindo "Nenhum" (value 0 ou '') para permitir limpar a seleção */
+  const selectableOptions = useMemo(() => options, [options]);
 
   const currentValue = value === undefined ? '' : value;
   const selectedOption = options.find((o) => String(o.value) === String(currentValue));
   const displayLabel = selectedOption != null ? (selectedOption.label ?? '') : '';
 
-  const handleChange = (newValue: string | number | undefined) => {
+  const handleChange = (newValue: string | number | undefined | null | React.ChangeEvent<HTMLSelectElement>) => {
+    let valueToSet: string | number = '';
+    if (newValue != null && typeof newValue === 'object' && 'target' in newValue && (newValue as React.ChangeEvent).target != null) {
+      valueToSet = (newValue as React.ChangeEvent<HTMLSelectElement>).target.value as string | number;
+    } else if (newValue !== undefined && newValue !== null && (typeof newValue === 'string' || typeof newValue === 'number')) {
+      valueToSet = newValue;
+    }
+    const event = {
+      target: { name: name ?? '', value: valueToSet, valueAsNumber: Number(valueToSet) },
+    } as unknown as React.ChangeEvent<HTMLSelectElement>;
     if (typeof onChange === 'function') {
-      const event = {
-        target: { name: name ?? '', value: newValue ?? '', valueAsNumber: Number(newValue) },
-      } as unknown as React.ChangeEvent<HTMLSelectElement>;
       onChange(event);
     }
     onBlur?.();

@@ -8,8 +8,24 @@ import type { IPaginationOutputDto, IProjectGetAllOutputDto } from '../../types/
 import type { ActionMenuItem, TableColumn } from '../../types/table';
 import DynamicTable from '../../components/DynamicTable';
 
-/** Projeto exibido na tabela: active é mapeado para tradução Ativo/Inativo */
-type ProjectTableRow = Omit<IProjectGetAllOutputDto, 'active'> & { active: string };
+function formatCreatedAt(value: string | null | undefined): string {
+  if (!value) return '—';
+  try {
+    const d = new Date(value);
+    return d.toLocaleString(undefined, {
+      dateStyle: 'short',
+      timeStyle: 'short',
+    });
+  } catch {
+    return String(value);
+  }
+}
+
+/** Projeto exibido na tabela: active e createdAt formatados */
+type ProjectTableRow = Omit<IProjectGetAllOutputDto, 'active' | 'createdAt'> & {
+  active: string;
+  createdAt: string;
+};
 
 export default function Automation() {
   const { t } = useTranslation('translation');
@@ -26,6 +42,7 @@ export default function Automation() {
         (p): ProjectTableRow => ({
           ...p,
           active: p.active ? t('common.status.active') : t('common.status.inactive'),
+          createdAt: formatCreatedAt(p.createdAt),
         })
       ),
     [rawProjects, t]
@@ -105,16 +122,35 @@ export default function Automation() {
 
   const handleDelete = async (project: ProjectTableRow) => {
     const confirmed = await confirmDelete({
-      itemName: project.name
+      itemName: project.name,
     });
-    if (confirmed) {
-      try {
-        await projectsService.deleteProject({ id: project.id });
-        showToast(t('common.states.success'), t('pages.automation.deleteSuccess'), 'success');
-        loadProjects();
-      } catch (error) {
-        showToast(t('common.states.error'), t('pages.automation.deleteError'), 'error');
-      }
+    if (!confirmed) return;
+    const id = Number(project.id);
+    console.log('[Automation] Excluir projeto - item da tabela:', project);
+    console.log('[Automation] Excluir projeto - id numérico:', id, 'isFinite:', Number.isFinite(id));
+    if (!Number.isFinite(id)) {
+      showToast(t('common.states.error'), t('pages.automation.deleteError'), 'error');
+      return;
+    }
+    try {
+      console.log('[Automation] Chamando deleteProject com payload:', { id });
+      await projectsService.deleteProject({ id });
+      console.log('[Automation] deleteProject sucesso');
+      showToast(t('common.states.success'), t('pages.automation.deleteSuccess'), 'success');
+      loadProjects();
+    } catch (error: any) {
+      const data = error.response?.data;
+      console.log('[Automation] Erro ao excluir projeto - status:', error.response?.status);
+      console.log('[Automation] Erro ao excluir projeto - response.data:', data);
+      console.log('[Automation] Erro ao excluir projeto - request URL:', error.config?.url);
+      console.log('[Automation] Erro ao excluir projeto - request method:', error.config?.method);
+      console.log('[Automation] Erro ao excluir projeto - error completo:', error);
+      const isDbError = data?.exception === 'DbUpdateException' || error.response?.status === 500;
+      const message = isDbError
+        ? t('pages.automation.deleteErrorDb')
+        : (data?.message ?? data?.title ?? error.message ?? t('pages.automation.deleteError'));
+      showToast(t('common.states.error'), message, 'error');
+      console.error('Erro ao excluir projeto:', data ?? error);
     }
   };
 
