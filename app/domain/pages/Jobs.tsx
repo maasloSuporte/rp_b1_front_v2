@@ -7,7 +7,7 @@ import { useModalStore } from '../../service/modal.service';
 import DynamicTable from '../../components/DynamicTable';
 import CreateJobModal, { type CreateJobResult } from '../../components/modals/CreateJobModal';
 import type { TableColumn, ActionMenuItem } from '../../types/table';
-import type { IPaginationOutputDto, IJobGetAllOutputDto } from '../../types/models';
+import type { IPaginationOutputDto, IJobGetAllOutputDto, IJobGetByIdOutputDto } from '../../types/models';
 
 export default function Jobs() {
   const { t } = useTranslation('translation');
@@ -19,6 +19,39 @@ export default function Jobs() {
   const [queryString, setQueryString] = useState('PageNumber=1&PageSize=5&SortField=id&SortOrder=asc');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+  const isTerminalState = (state: number) => state === 3 || state === 4 || state === 5; // COMPLETED / FAILED / CANCELLED
+
+  const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+  const pollAndSyncJobState = async (jobId: number) => {
+    // Atualiza somente a coluna "State" da linha correspondente na tabela.
+    // Isso evita precisar dar refresh manual para habilitar/desabilitar o botão Stop.
+    const MAX_ATTEMPTS = 20;
+    const INTERVAL_MS = 2000;
+
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      const job: IJobGetByIdOutputDto = await jobService.getByIdJob(jobId);
+
+      const stateNum =
+        typeof job.state === 'number' ? job.state : Number.parseInt(String(job.state), 10);
+
+      if (Number.isNaN(stateNum)) {
+        return;
+      }
+
+      setData((prev) =>
+        prev.map((row) => (row.id === jobId ? { ...row, State: stateNum } : row))
+      );
+
+      if (isTerminalState(stateNum)) {
+        return;
+      }
+
+      // Se já entrou em execução, deixa a UI ficar sincronizada até chegar em COMPLETED/FAILED/CANCELLED.
+      await sleep(INTERVAL_MS);
+    }
+  };
 
   const columns: TableColumn[] = useMemo(
     () => [
@@ -41,6 +74,11 @@ export default function Jobs() {
     () => [
       { label: t('pages.jobs.preview'), action: 'preview', icon: 'preview' },
       { label: t('pages.jobs.execute'), action: 'execute', icon: 'play' },
+      {
+        label: t('pages.jobs.stop'),
+        action: 'stop',
+        icon: 'stop',
+      },
       { label: t('common.buttons.delete'), action: 'delete', icon: 'trash' },
     ],
     [t]
@@ -80,6 +118,9 @@ export default function Jobs() {
         break;
       case 'execute':
         await handleExecuteJob(event.item.id);
+        break;
+      case 'stop':
+        await handleStopJob(event.item.id);
         break;
       case 'delete':
         await handleDeleteJob(event.item);
@@ -156,8 +197,34 @@ export default function Jobs() {
       await jobService.executeJob(jobId);
       showToast(t('common.states.success'), t('pages.jobs.executeSuccess'), 'success');
       loadJobs();
+      // Dispara a sincronização sem esperar o usuário recarregar a página.
+      void pollAndSyncJobState(jobId);
     } catch (error: any) {
       const message = error.response?.data?.message || t('pages.jobs.deleteError');
+      showToast(t('common.states.error'), message, 'error');
+    }
+  };
+
+  const handleStopJob = async (jobId: number) => {
+    try {
+      const result = await jobService.stopJob(jobId);
+      const message = result?.message ?? '';
+
+      const shouldWarn =
+        message.toLowerCase().includes('processid') ||
+        message.toLowerCase().includes('não há processid') ||
+        message.toLowerCase().includes('não está conectado') ||
+        message.toLowerCase().includes('continuar');
+
+      if (shouldWarn) {
+        showToast(t('common.warning'), message || t('pages.jobs.stopError'), 'warning');
+      } else {
+        showToast(t('common.states.success'), message || t('pages.jobs.stopSuccess'), 'success');
+        // Só vale sincronizar se o comando de parada foi aceito/enviado.
+        void pollAndSyncJobState(jobId);
+      }
+    } catch (error: any) {
+      const message = error.response?.data?.message ?? t('pages.jobs.stopError');
       showToast(t('common.states.error'), message, 'error');
     }
   };

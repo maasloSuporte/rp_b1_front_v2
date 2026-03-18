@@ -8,6 +8,11 @@ const actionIcons: Record<string, React.ReactNode> = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
     </svg>
   ),
+  stop: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <rect x="7" y="7" width="10" height="10" rx="1" ry="1" strokeWidth={2} />
+    </svg>
+  ),
   'arrow-up': (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
@@ -360,15 +365,19 @@ export default function DynamicTable({
                             .filter((item) => !item.showCondition || item.showCondition(row))
                             .map((item) => {
                               const isDelete = item.action === 'delete' || item.action === 'deleted';
+                              const isDisabled = item.disabledCondition?.(row) ?? false;
                               const icon = actionIcons[item.icon ?? 'edit'] ?? actionIcons.edit;
                               return (
                                 <button
                                   key={item.action}
                                   onClick={() => handleActionClick(item.action, row)}
+                                  disabled={isDisabled}
                                   className={`p-2 rounded-lg transition-colors ${
-                                    isDelete
-                                      ? 'text-error hover:bg-error/10'
-                                      : 'text-purple hover:bg-purple-100'
+                                    isDisabled
+                                      ? 'text-text-secondary/40 bg-transparent cursor-not-allowed hover:bg-transparent'
+                                      : isDelete
+                                        ? 'text-error hover:bg-error/10'
+                                        : 'text-purple hover:bg-purple-100'
                                   }`}
                                   title={item.label}
                                   aria-label={item.label}

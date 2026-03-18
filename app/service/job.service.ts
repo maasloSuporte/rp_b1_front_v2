@@ -26,7 +26,14 @@ export const jobService = {
   },
 
   executeJob: async (id: number): Promise<void> => {
-    await api.post(`/jobs/${id}/execute`);
+    const response = await api.post(`/jobs/${id}/execute`);
+    console.log(response.data);
+    return
+  },
+
+  stopJob: async (id: number): Promise<{ message?: string; jobId?: number }> => {
+    const response = await api.post(`/jobs/${id}/stop`);
+    return response.data;
   },
 
   deleteJob: async (id: number): Promise<void> => {

@@ -2,7 +2,7 @@ export interface IJobGetByIdOutputDto {
     id: number
     projectId: number
     machineId: number
-    state: string
+    state: number | string
     ended: string
     priority: string
     started: string

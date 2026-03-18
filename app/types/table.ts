@@ -17,6 +17,8 @@ export interface ActionMenuItem {
   icon?: string;
   action: string;
   showCondition?: (item: any) => boolean;
+  /** Se true, o botão fica desabilitado para aquela linha */
+  disabledCondition?: (item: any) => boolean;
 }
 
 export interface TableState {

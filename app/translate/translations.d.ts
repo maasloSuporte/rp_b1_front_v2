@@ -177,6 +177,9 @@ export type TranslationsType = {
       endedAt: string;
       preview: string;
       execute: string;
+      stop: string;
+      stopSuccess: string;
+      stopError: string;
       deleteSuccess: string;
       deleteError: string;
       deleteMultipleSuccess: string;

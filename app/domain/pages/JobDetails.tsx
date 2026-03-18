@@ -70,14 +70,36 @@ export default function JobDetails() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">{t('pages.jobDetails.state')}</label>
-            <span className={`inline-block px-3 py-1 rounded-full text-sm ${
-              job.state === 'Running' ? 'bg-green-100 text-green-800' :
-              job.state === 'Completed' ? 'bg-blue-100 text-blue-800' :
-              job.state === 'Failed' ? 'bg-red-100 text-red-800' :
-              'bg-gray-100 text-gray-800'
-            }`}>
-              {job.state || '-'}
-            </span>
+            {(() => {
+              const stateNum =
+                typeof job.state === 'number' ? job.state : Number.parseInt(String(job.state), 10);
+
+              const isRunning = stateNum === 1 || stateNum === 2 || job.state === 'Running';
+              const isCompleted = stateNum === 3 || job.state === 'Completed';
+              const isFailed = stateNum === 4 || job.state === 'Failed';
+              const isCancelled = stateNum === 5 || job.state === 'Cancelled';
+
+              const label =
+                isRunning ? 'Running' :
+                isCompleted ? 'Completed' :
+                isFailed ? 'Failed' :
+                isCancelled ? 'Cancelled' :
+                job.state ?? '-';
+
+              const className = isRunning
+                ? 'bg-green-100 text-green-800'
+                : isCompleted
+                  ? 'bg-blue-100 text-blue-800'
+                  : isFailed
+                    ? 'bg-red-100 text-red-800'
+                    : 'bg-gray-100 text-gray-800';
+
+              return (
+                <span className={`inline-block px-3 py-1 rounded-full text-sm ${className}`}>
+                  {label || '-'}
+                </span>
+              );
+            })()}
           </div>
 
           <div>
